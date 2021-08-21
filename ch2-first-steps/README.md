@@ -82,8 +82,30 @@ There are several image registries; in this example, we will use Docker Hub.
 
 "Docker Hub will allow you to push an image if the image's repository name starts with your Docker Hub ID." (Luksa, 35)
 
-My Docker Hub ID is `kostaleonard`.
+My Docker Hub ID is `kostaleonard`. Note that this does not rename the image; it only adds an additional tag pointing to the same image ID. After running this, both `kubia` and `kostaleonard/kubia` point to the same image ID.
 
 ```
 docker tag kubia kostaleonard/kubia
+```
+
+### Push to Docker Hub
+
+You may need to log in to Docker Hub first.
+
+```
+docker login
+```
+
+Now you can push your image.
+
+```
+docker push kostaleonard/kubia
+```
+
+### Run the image on a different machine
+
+If you don't have a different machine handy, you can also demo this by running `docker rmi <image-id>` so that you no longer have a local copy.
+
+```
+docker run -p 8080:8080 -d kostaleonard/kubia
 ```
