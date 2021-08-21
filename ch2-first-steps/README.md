@@ -24,9 +24,26 @@ www.listen(8080);
 docker build -t kubia .
 ```
 
-### Run the container image
+### Run the container
 
 ```
 docker run --name kubia-container -p 8080:8080 -d kubia
 ```
 
+### Explore the container
+
+```
+docker exec -it kubia-container bash
+```
+
+### Stop the container
+
+```
+docker stop kubia-container
+```
+
+### Remove the container
+
+```
+docker rm kubia-container
+```
