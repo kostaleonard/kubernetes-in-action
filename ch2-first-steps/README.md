@@ -107,5 +107,24 @@ docker push kostaleonard/kubia
 If you don't have a different machine handy, you can also demo this by running `docker rmi <image-id>` so that you no longer have a local copy.
 
 ```
-docker run -p 8080:8080 -d kostaleonard/kubia
+docker run --name kubia-container -p 8080:8080 -d kostaleonard/kubia
 ```
+
+## Setting up a Kubernetes cluster
+
+We will use Minikube (available [here](https://minikube.sigs.k8s.io/docs/start/)) for single-node development. `kubectl` is also needed and may or may not be installed when you install `minikube`.
+
+### Starting a Kubernetes cluster with Minikube
+
+This command will start a Kubernetes cluster.
+
+```
+minikube start
+```
+
+### Selected Kubernetes commands
+
+These are some of the commands that you can use to interact with Kubernetes.
+
+* `kubectl cluster-info`: show Kubernetes cluster info; verify cluster health.
+* `minikube ssh`: log into the Minikube VM.
