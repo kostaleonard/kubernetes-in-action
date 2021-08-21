@@ -1,1 +1,0 @@
-docker rm kubia-container
