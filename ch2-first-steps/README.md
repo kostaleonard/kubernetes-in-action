@@ -122,6 +122,10 @@ This command will start a Kubernetes cluster.
 minikube start
 ```
 
+### Using a hosted Kubernetes cluster with Google Kubernetes Engine
+
+Visit [the GKE quickstart guide](https://cloud.google.com/kubernetes-engine/docs/quickstart) for installation information.
+
 ### Selected Kubernetes commands
 
 These are some of the commands that you can use to interact with Kubernetes.
