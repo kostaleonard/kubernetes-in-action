@@ -126,9 +126,54 @@ minikube start
 
 Visit [the GKE quickstart guide](https://cloud.google.com/kubernetes-engine/docs/quickstart) for installation information.
 
-### Selected Kubernetes commands
+## Running the app on Kubernetes
+
+### Creating a pod
+
+Usually we will use a JSON or YAML manifest to deploy an app on Kubernetes, but if our app is simple enough we can just specify command line arguments.
+
+Arguments:
+
+* `NAME`: Tells Kubernetes what to name the pod containing the app.
+* `--image`: The container image that you want to run.
+* `--port`: The port that the container exposes.
+
+```
+kubectl run kubia --image=kostaleonard/kubia --port=8080
+```
+
+We have now created a pod called `kubia`.
+
+### Accessing the app
+
+Each pod gets an IP address, but this address is only accessible from inside the cluster. You can verify this by running the following.
+
+```
+# Get the pod's internal IP for the curl command.
+# Mine is 172.17.0.3.
+kubectl describe pod kubia | grep IP
+minikube ssh
+curl 172.17.0.3:8080
+```
+
+To make the pod accessible to the outside world, you can expose it through a Service object.
+
+```
+kubectl expose pod kubia --type=LoadBalancer --name=kubia-http
+```
+
+This creates a service to expose the pod. We can list services with `kubectl get services`. We need to wait for the `LoadBalancer` to give the `kubia-http` service an external IP address. If you are using `minikube` and not GKE or other cloud resources, your service will never obtain an external IP address. Instead, you can create a tunnel from your host to the service using the following command.
+
+```
+minikube service --url=true kubia-http
+```
+
+The `--url=true` flag tells `minikube` to print the URL of the service to stdout rather than automatically launching a browser and navigating to the service.
+
+## Selected Kubernetes commands
 
 These are some of the commands that you can use to interact with Kubernetes.
 
-* `kubectl cluster-info`: show Kubernetes cluster info; verify cluster health.
-* `minikube ssh`: log into the Minikube VM.
+* `kubectl cluster-info`: Show Kubernetes cluster info; verify cluster health.
+* `minikube ssh`: Log into the Minikube VM.
+* `kubectl get pods`: Show running pods.
