@@ -170,6 +170,32 @@ minikube service --url=true kubia-http
 
 The `--url=true` flag tells `minikube` to print the URL of the service to stdout rather than automatically launching a browser and navigating to the service.
 
+### Kubernetes dashboard
+
+Another way to inspect Kubernetes objects is through the Kubernetes web dashboard.
+
+#### GKE/Cloud
+
+With cloud deployments, you can get the URL of the dashboard with the following.
+
+```
+kubectl cluster-info | grep dashboard
+```
+
+To get the username and password to access this web page, run the following.
+
+```
+gcloud container clusters describe kubia | grep -E "(username|password):"
+```
+
+#### Minikube
+
+Launch the dashboard with the following command.
+
+```
+minikube dashboard
+```
+
 ## Selected Kubernetes commands
 
 These are some of the commands that you can use to interact with Kubernetes.
