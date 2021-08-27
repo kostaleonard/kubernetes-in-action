@@ -15,3 +15,23 @@ Containers in the same pod will always run on the same physical machine; the pod
 Each pod has its own static IP address that is routable to every other pod in the cluster as if they all share the same flat LAN, regardless of physical network topology.
 
 Think of pods as separate machines where each contains only a single app (which may have related subcomponents).
+
+## Creating pods from YAML and JSON
+
+### Anatomy of a YAML
+
+The YAML for a Kubernetes object almost always contains 3 parts:
+
+1. `metadata`: Object metadata, e.g., name.
+1. `spec`: Object specifications and contents.
+1. `status`: Object status--read only.
+
+You only need to define the first 2 when writing a YAML.
+
+### Examining a YAML descriptor of an existing pod
+
+To view the YAML definition of an existing pod, run:
+
+```
+kubectl get pod kubia -o yaml
+```
