@@ -35,3 +35,55 @@ To view the YAML definition of an existing pod, run:
 ```
 kubectl get pod kubia -o yaml
 ```
+
+### Writing a YAML
+
+Use `kubectl explain <resource>` to see which attributes that resource (e.g., pod) supports. These can be defined in the YAML. You can also examine the attributes themselves with `kubectl explain pods.spec`. Alternatively, see the [Kubernetes API reference documentation](https://kubernetes.io/docs/concepts/overview/kubernetes-api/) for help preparing manifests of specific objects.
+
+From `kubia-manual.yaml`:
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-manual
+spec:
+  containers:
+  - image: kostaleonard/kubia
+    name: kubia
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+```
+
+### Creating a pod from a YAML
+
+To create a resource (here, pod) from a YAML, use:
+
+```
+kubectl create -f kubia-manual.yaml
+```
+
+## Viewing application logs
+
+Containerized applications usually write logs to stdout and stderr instead of writing to files. Docker automatically redirects those streams to files so they can be viewed later.
+
+If you have the container ID, you can run `docker logs <container-id>` to see the logs. You can do this if you `ssh` into the machine that has the pod you're looking for and run `docker ps` to get the container ID. Using `minikube`, that might look like:
+
+```
+minikube ssh
+docker ps
+docker logs <container-id>
+```
+
+Or, you can just use `kubectl logs <pod-name>` to get the logs for the containers on the pod (this is part of the reason why it is preferrable to have one container per pod if possible).
+
+```
+kubectl logs kubia-manual
+```
+
+If your pod has multiple containers, you can get the logs for just one container with:
+
+```
+kubectl logs kubia-manual -c kubia
+```
