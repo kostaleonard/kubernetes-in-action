@@ -87,3 +87,64 @@ If your pod has multiple containers, you can get the logs for just one container
 ```
 kubectl logs kubia-manual -c kubia
 ```
+
+## Sending requests to the pod with port  forwarding
+
+Apart from Services, there are other ways to interact with deployed pods. Port forwarding is one that is usually done for debugging.
+
+```
+kubectl port-forward kubia-manual 8888:8080
+```
+
+## Organizing pods with labels
+
+### About labels
+
+Pods and other Kubernetes resources can be organized with labels. Operations can then be applied to all resources with a given label.
+
+Labels are key-value pairs, e.g., `app: ui` or `rel: stable`. Resources can have many labels, but only one value per key. Labels are usually added at resource creation time.
+
+### Creating pods with labels
+
+From `kubia-manual-with-labels.yaml`:
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-manual-v2
+  labels:
+    creation_method: manual
+    env: prod
+spec:
+  containers:
+  - image: kostaleonard/kubia
+    name: kubia
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+```
+
+Deploy with `kubectl create -f kubia-manual-with-labels.yaml` and then view pods and labels with `kubectl get pods --show-labels` or `kubectl get pods -L creation_method,env`.
+
+### Modifying labels of existing pods
+
+Use the `kubectl label` command.
+
+```
+kubectl label pod kubia-manual creation_method=manual
+```
+
+When you overwrite a label, use the `--overwrite` flag.
+
+```
+kubectl label pod kubia-manual-v2 env=debug --overwrite
+```
+
+## Selecting pods with label selectors
+
+You can select subsets of pods based on labels and their values.
+
+```
+kubectl get pods -l creation_method=manual
+```
