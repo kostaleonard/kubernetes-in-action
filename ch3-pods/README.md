@@ -172,3 +172,11 @@ spec:
 ```
 
 Note that if no node exists that matches the selection specifications, the pod will fail to deploy (status will be stuck at "Pending").
+
+## Annotations
+
+Annotations are key-value pairs similar to labels, but they can't be used for matching. They are used to store resource information that could be useful (e.g., a short description of the resource, the author of the resource).
+
+### Looking up an object's annotations
+
+You can look up an object's annotations either by requesting the full YAML with `kubectl get pod kubia -o yaml` or by running `kubectl describe pod kubia`.
