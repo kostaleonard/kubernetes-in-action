@@ -144,6 +144,10 @@ kubectl run kubia --image=kostaleonard/kubia --port=8080
 
 We have now created a pod called `kubia`.
 
+### Pod scheduling
+
+**Pod scheduling** is the process of assigning a pod to a worker node for execution. The pod is run immediately (not at some time in the future, as the term might lead you to believe).
+
 ### Accessing the app
 
 Each pod gets an IP address, but this address is only accessible from inside the cluster. You can verify this by running the following.
