@@ -149,3 +149,26 @@ You can select subsets of pods based on labels and their values.
 * Resource contains a label with a certain key and value: `kubectl get pods -l creation_method=manual`, `kubectl get pods -l 'env in (prod,devel)'`, `kubectl get pods -l 'env notin (prod,devel)'`
 * Resource contains a label with a  certain key, but with a value not equal to the one you specify: `kubectl get pods -l creation_method!=manual`
 * Multiple comma-separated criteria: `kubectl get pods -l env,creation_method=manual`
+
+## Using labels to constrain pod scheduling
+
+Usually, we don't care how Kubernetes decides to schedule pods to worker nodes; this is how Kubernetes is designed--all worker nodes are exposed to the developer as a single, large deployment platform. However, sometimes we want to be able to constrain pod scheduling. For instance, if the worker nodes do not have homogeneous hardware, we may want to schedule certain pods only on worker nodes that have GPU acceleration.
+
+Don't specify the exact node you want something deployed on, though. Just specify the requirements of the node. This prevents tight coupling of the app with infrastructure.
+
+From `kubia-gpu.yaml`. Notice the GPU node selector that forces the app to be deployed on a GPU node.
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-gpu
+spec:
+  nodeSelector:
+    gpu: "true"
+  containers:
+  - image: kostaleonard/kubia
+    name: kubia
+```
+
+Note that if no node exists that matches the selection specifications, the pod will fail to deploy (status will be stuck at "Pending").
