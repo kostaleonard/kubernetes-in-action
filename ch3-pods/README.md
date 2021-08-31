@@ -145,6 +145,7 @@ kubectl label pod kubia-manual-v2 env=debug --overwrite
 
 You can select subsets of pods based on labels and their values.
 
-```
-kubectl get pods -l creation_method=manual
-```
+* Resource contains (or does not contain) a label with a certain key: `kubectl get pods -l env`, `kubectl get pods -l '!env'`
+* Resource contains a label with a certain key and value: `kubectl get pods -l creation_method=manual`, `kubectl get pods -l 'env in (prod,devel)'`, `kubectl get pods -l 'env notin (prod,devel)'`
+* Resource contains a label with a  certain key, but with a value not equal to the one you specify: `kubectl get pods -l creation_method!=manual`
+* Multiple comma-separated criteria: `kubectl get pods -l env,creation_method=manual`
