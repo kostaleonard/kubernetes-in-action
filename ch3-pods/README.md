@@ -219,3 +219,31 @@ To create resources in a specific (non-default) namespace, either add a `namespa
 `-n` is usually short for `--namespace`.
 
 The default namespace can be changed with `kubectl config`. Try `alias kcd='kubectl config set-context $(kubectl config current-context) --namespace'` so you can switch namespace contexts with `kcd some-namespace`.
+
+## Stopping and removing pods
+
+### Deleting a pod by name
+
+Deleting a pod causes Kubernetes to send a `SIGTERM` to all processes in the pod's container(s). After some time (default 30 seconds), Kubernetes will send a `SIGKILL` if the process has not terminated. So, to shut down gracefully, your processes need to be able to handle a `SIGTERM`.
+
+To delete a pod, run `kubectl delete pod kubia-gpu`.
+
+### Deleting pods using label selectors
+
+To delete pods by label, use `kubectl delete pods -l creation_method=manual`
+
+### Deleting pods by deleting the whole namespace
+
+You can delete a namespace and all pods within it using `kubectl delete ns custom-namespace`.
+
+### Deleting all pods in a namespace, while keeping the namespace
+
+To delete all pods in a namespace, but preserve the namespace itself, run `kubectl delete pods --all`.
+
+### Deleting (almost) all resources in a namespace
+
+To delete all resources in a namespace, run `kubectl delete all --all`. The first `all` specifies that you want to delete resources of all types, and the second `all` specifies that you want to delete all instances of those resource types.
+
+Using `kubectl delete all` won't delete some resources, e.g., Secrets.
+
+This command will also delete the `kubernetes` service, but that will be recreated automatically after a few moments.
