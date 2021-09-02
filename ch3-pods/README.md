@@ -184,3 +184,38 @@ You can look up an object's annotations either by requesting the full YAML with 
 ### Modifying an object's annotations
 
 Annotations can be added in the YAML or modified later with `kubectl annotate pod kubia-manual mycompany.com/someannotation="foo bar"`. Since various tools and libraries will annotate your objects, a good way to prevent collisions is to format annotation keys with prefixes as shown above, e.g., `mycompany.com/xyz`.
+
+## Namespaces
+
+What if you want to split a large, complex system with many components into smaller distinct groups so that they can be more easily managed with Kubernetes? Or what if you are operating in a multi-tenant environment and need to split resources based on that? Namespaces split Kubernetes resources into separate, non-overlapping groups. Resource names need only be unique within a namespace. Kubernetes namespaces are not the same as Linux namespaces, which Docker uses to provide process isolation and Kubernetes uses to provide pod isolation.
+
+Some resources are not namespaced (i.e., they are cluster-level resources). One of these is the Node resource.
+
+Namespaces also allow Kubernetes to split off system resources so the default namespace isn't polluted and you don't inadvertantly delete them.
+
+### Listing namespaces and their pods
+
+List all namespaces in the cluster with `kubectl get ns`. List all pods in a specific namespace with `kubectl get pods --namespace default`. You can also try other namespaces like `kube-system`.
+
+### Creating a namespace from a YAML
+
+From `custom-namespace.yaml`:
+
+```
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: custom-namespace
+```
+
+### Creating a namespace with `kubectl create namespace`
+
+You can also create a namespace directly with `kubectl create namespace custom-namespace`.
+
+### Managing objects in other namespaces
+
+To create resources in a specific (non-default) namespace, either add a `namespace: custom-namespace` entry to the resource's YAML, or specify the namespace at creation time with `kubectl create -f kubia-manual.yaml -n custom-namespace`.
+
+`-n` is usually short for `--namespace`.
+
+The default namespace can be changed with `kubectl config`. Try `alias kcd='kubectl config set-context $(kubectl config current-context) --namespace'` so you can switch namespace contexts with `kcd some-namespace`.
