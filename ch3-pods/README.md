@@ -180,3 +180,7 @@ Annotations are key-value pairs similar to labels, but they can't be used for ma
 ### Looking up an object's annotations
 
 You can look up an object's annotations either by requesting the full YAML with `kubectl get pod kubia -o yaml` or by running `kubectl describe pod kubia`.
+
+### Modifying an object's annotations
+
+Annotations can be added in the YAML or modified later with `kubectl annotate pod kubia-manual mycompany.com/someannotation="foo bar"`. Since various tools and libraries will annotate your objects, a good way to prevent collisions is to format annotation keys with prefixes as shown above, e.g., `mycompany.com/xyz`.
