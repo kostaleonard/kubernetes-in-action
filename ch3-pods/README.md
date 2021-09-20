@@ -42,7 +42,7 @@ Use `kubectl explain <resource>` to see which attributes that resource (e.g., po
 
 From `kubia-manual.yaml`:
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -60,7 +60,7 @@ spec:
 
 To create a resource (here, pod) from a YAML, use:
 
-```
+```bash
 kubectl create -f kubia-manual.yaml
 ```
 
@@ -70,7 +70,7 @@ Containerized applications usually write logs to stdout and stderr instead of wr
 
 If you have the container ID, you can run `docker logs <container-id>` to see the logs. You can do this if you `ssh` into the machine that has the pod you're looking for and run `docker ps` to get the container ID. Using `minikube`, that might look like:
 
-```
+```bash
 minikube ssh
 docker ps
 docker logs <container-id>
@@ -78,13 +78,13 @@ docker logs <container-id>
 
 Or, you can just use `kubectl logs <pod-name>` to get the logs for the containers on the pod (this is part of the reason why it is preferrable to have one container per pod if possible).
 
-```
+```bash
 kubectl logs kubia-manual
 ```
 
 If your pod has multiple containers, you can get the logs for just one container with:
 
-```
+```bash
 kubectl logs kubia-manual -c kubia
 ```
 
@@ -92,7 +92,7 @@ kubectl logs kubia-manual -c kubia
 
 Apart from Services, there are other ways to interact with deployed pods. Port forwarding is one that is usually done for debugging.
 
-```
+```bash
 kubectl port-forward kubia-manual 8888:8080
 ```
 
@@ -108,7 +108,7 @@ Labels are key-value pairs, e.g., `app: ui` or `rel: stable`. Resources can have
 
 From `kubia-manual-with-labels.yaml`:
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -131,7 +131,7 @@ Deploy with `kubectl create -f kubia-manual-with-labels.yaml` and then view pods
 
 Use the `kubectl label` command.
 
-```
+```bash
 kubectl label pod kubia-manual creation_method=manual
 ```
 
