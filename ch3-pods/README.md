@@ -137,7 +137,7 @@ kubectl label pod kubia-manual creation_method=manual
 
 When you overwrite a label, use the `--overwrite` flag.
 
-```
+```bash
 kubectl label pod kubia-manual-v2 env=debug --overwrite
 ```
 
@@ -158,7 +158,7 @@ Don't specify the exact node you want something deployed on, though. Just specif
 
 From `kubia-gpu.yaml`. Notice the GPU node selector that forces the app to be deployed on a GPU node.
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -201,7 +201,7 @@ List all namespaces in the cluster with `kubectl get ns`. List all pods in a spe
 
 From `custom-namespace.yaml`:
 
-```
+```yaml
 apiVersion: v1
 kind: Namespace
 metadata:

@@ -6,7 +6,7 @@
 
 This app handles HTTP requests on port 8080 and responds with 200 OK and the hostname. When run from a Docker container, the hostname will be the container's ID.
 
-```
+```js
 const http = require('http');
 const os = require('os');
 
