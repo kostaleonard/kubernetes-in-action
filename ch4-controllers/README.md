@@ -50,3 +50,42 @@ spec:
         port: 8080
       initialDelaySeconds: 15
 ```
+
+## Introducing ReplicationControllers
+
+**Note: ReplicationControllers are deprecated and have been completely replaced with ReplicaSets.**
+
+A ReplicationController is a Kubernetes resource that ensures its pods are always kept running, even if the nodes to which they are scheduled fail. A ReplicationController makes sure that an exact number of pods always matches its label selector.
+
+### Creating a ReplicationController
+
+From `kubia-rc.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    app: kubia
+  template:
+    metadata:
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - name: kubia
+        image: luksa/kubia
+        ports:
+        - containerPort: 8080
+```
+
+**Note: if using ReplicationControllers, don't specify the label selector; it will automatically be taken from the template if left unspecified.**
+
+Create the controller with `kubectl create -f kubia-rc.yaml`. You can verify that the ReplicationController does its job by running `kubectl get pods -l app=kubia`, then deleting a pod with `kubectl delete pod <name>`.
+
+### Getting information about a ReplicationController
+
+View ReplicationController info with `kubectl get replicationcontroller` or `kubectl describe replicationcontroller kubia`. You can substitute `rc` for `replicationcontroller`.
