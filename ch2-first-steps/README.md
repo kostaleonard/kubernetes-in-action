@@ -28,7 +28,7 @@ www.listen(8080);
 
 The Dockerfile tells Docker how to build the image for the app.
 
-```
+```Dockerfile
 FROM node:7
 ADD app.js /app.js
 ENTRYPOINT ["node", "app.js"]
@@ -38,7 +38,7 @@ ENTRYPOINT ["node", "app.js"]
 
 This command will build the image and name it `kubia` (from Kubernetes in Action).
 
-```
+```bash
 docker build -t kubia .
 ```
 
@@ -46,7 +46,7 @@ docker build -t kubia .
 
 This command runs a new container called `kubia-container` from the `kubia` image. It also forwards port 8080 on the host machine to 8080 on the container. `-d` runs the container in detached mode (in the background).
 
-```
+```bash
 docker run --name kubia-container -p 8080:8080 -d kubia
 ```
 
@@ -54,7 +54,7 @@ docker run --name kubia-container -p 8080:8080 -d kubia
 
 This command allows you to enter a shell in the container (`-it` flags are both necessary for an interactive terminal).
 
-```
+```bash
 docker exec -it kubia-container bash
 ```
 
@@ -62,7 +62,7 @@ docker exec -it kubia-container bash
 
 This command stops the container, but does not remove it.
 
-```
+```bash
 docker stop kubia-container
 ```
 
@@ -70,7 +70,7 @@ docker stop kubia-container
 
 This command removes a container.
 
-```
+```bash
 docker rm kubia-container
 ```
 
@@ -84,7 +84,7 @@ There are several image registries; in this example, we will use Docker Hub.
 
 My Docker Hub ID is `kostaleonard`. Note that this does not rename the image; it only adds an additional tag pointing to the same image ID. After running this, both `kubia` and `kostaleonard/kubia` point to the same image ID.
 
-```
+```bash
 docker tag kubia kostaleonard/kubia
 ```
 
@@ -92,13 +92,13 @@ docker tag kubia kostaleonard/kubia
 
 You may need to log in to Docker Hub first.
 
-```
+```bash
 docker login
 ```
 
 Now you can push your image.
 
-```
+```bash
 docker push kostaleonard/kubia
 ```
 
@@ -106,7 +106,7 @@ docker push kostaleonard/kubia
 
 If you don't have a different machine handy, you can also demo this by running `docker rmi <image-id>` so that you no longer have a local copy.
 
-```
+```bash
 docker run --name kubia-container -p 8080:8080 -d kostaleonard/kubia
 ```
 
@@ -118,7 +118,7 @@ We will use Minikube (available [here](https://minikube.sigs.k8s.io/docs/start/)
 
 This command will start a Kubernetes cluster.
 
-```
+```bash
 minikube start
 ```
 
@@ -138,7 +138,7 @@ Arguments:
 * `--image`: The container image that you want to run.
 * `--port`: The port that the container exposes.
 
-```
+```bash
 kubectl run kubia --image=kostaleonard/kubia --port=8080
 ```
 
@@ -152,7 +152,7 @@ We have now created a pod called `kubia`.
 
 Each pod gets an IP address, but this address is only accessible from inside the cluster. You can verify this by running the following.
 
-```
+```bash
 # Get the pod's internal IP for the curl command.
 # Mine is 172.17.0.3.
 kubectl describe pod kubia | grep IP
@@ -162,13 +162,13 @@ curl 172.17.0.3:8080
 
 To make the pod accessible to the outside world, you can expose it through a Service object.
 
-```
+```bash
 kubectl expose pod kubia --type=LoadBalancer --name=kubia-http
 ```
 
 This creates a service to expose the pod. We can list services with `kubectl get services`. We need to wait for the `LoadBalancer` to give the `kubia-http` service an external IP address. If you are using `minikube` and not GKE or other cloud resources, your service will never obtain an external IP address. Instead, you can create a tunnel from your host to the service using the following command.
 
-```
+```bash
 minikube service --url=true kubia-http
 ```
 
@@ -182,13 +182,13 @@ Another way to inspect Kubernetes objects is through the Kubernetes web dashboar
 
 With cloud deployments, you can get the URL of the dashboard with the following.
 
-```
+```bash
 kubectl cluster-info | grep dashboard
 ```
 
 To get the username and password to access this web page, run the following.
 
-```
+```bash
 gcloud container clusters describe kubia | grep -E "(username|password):"
 ```
 
@@ -196,7 +196,7 @@ gcloud container clusters describe kubia | grep -E "(username|password):"
 
 Launch the dashboard with the following command.
 
-```
+```bash
 minikube dashboard
 ```
 
