@@ -129,3 +129,7 @@ kubectl edit rc kubia
 ```
 
 You can scale down in the same manner.
+
+### Deleting a ReplicationController
+
+You can delete a ReplicationController with `kubectl delete rc kubia`. By default, this will also delete that ReplicationController's pods. To keep the pods, run with the `--cascade=false` flag.
