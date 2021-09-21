@@ -107,3 +107,25 @@ You might want to take a pod out of a ReplicationController's scope to debug tha
 ```bash
 kubectl delete pod -l app=foo
 ```
+
+### Changing the pod template
+
+You can edit the pod template for an existing ReplicationController by running `kubectl edit rc kubia` and editing the `template` section. New pods will be created with the updated template; old pods will not be affected. Editing the running ReplicationController's configuration won't update any yaml file used to create it, so this method won't pass changes into any version control system you may be using.
+
+### Horizontally scaling pods
+
+Scaling pods is as easy as changing the number of replicas required in the ReplicationController's configuration.
+
+One way, using `kubectl scale`:
+
+```bash
+kubectl scale rc kubia --replicas=10
+```
+
+Another way, by editing the ReplicationController definition. Go to the `spec` section and set `replicas` to the desired number.
+
+```bash
+kubectl edit rc kubia
+```
+
+You can scale down in the same manner.
