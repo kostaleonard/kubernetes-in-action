@@ -89,3 +89,21 @@ Create the controller with `kubectl create -f kubia-rc.yaml`. You can verify tha
 ### Getting information about a ReplicationController
 
 View ReplicationController info with `kubectl get replicationcontroller` or `kubectl describe replicationcontroller kubia`. You can substitute `rc` for `replicationcontroller`.
+
+### Moving pods in and out of the scope of a ReplicationController
+
+Since ReplicationControllers count the number of pods in their scope based on labels, changing pod labels will add pods to or remove pods from the ReplicationController's scope.
+
+Overwrite one of the pod's `app` label to take it out of the scope of the ReplicationController.
+
+```bash
+kubectl label pod <pod-name> app=foo --overwrite
+```
+
+List pods with `kubectl get pods -L app` and verify that there are now 4 pods, 3 of which have the label `app=kubia` and 1 of which has the label `app=foo`.
+
+You might want to take a pod out of a ReplicationController's scope to debug that specific pod. When you have finished debugging, delete the pod.
+
+```bash
+kubectl delete pod -l app=foo
+```
