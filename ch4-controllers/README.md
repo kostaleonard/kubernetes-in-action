@@ -252,3 +252,52 @@ spec:
 ```
 
 Completed pods won't be deleted. This allows you to see the logs with `kubectl logs <pod-name>`.
+
+### Running multiple pod instances in a Job
+
+Jobs may be configured to create more than one pod instance and run them in parallel or sequentially. Use `spec.completions` and `spec.parallelism` for these.
+
+#### Running Job pods sequentially
+
+From `multi-completion-batch-job.yaml`:
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: multi-completion-batch-job
+spec:
+  completions: 5
+  template:
+    metadata:
+      labels:
+        app: batch-job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: main
+        image: luksa/batch-job
+```
+
+#### Running Job pods in parallel
+
+From `multi-completion-parallel-batch-job.yaml`:
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: multi-completion-batch-job
+spec:
+  completions: 5
+  parallelism: 2
+  template:
+    metadata:
+      labels:
+        app: batch-job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: main
+        image: luksa/batch-job
+```
