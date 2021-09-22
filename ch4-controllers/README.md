@@ -227,3 +227,28 @@ spec:
 ```
 
 Label a node with `disk=ssd` and then use `kubectl create`.
+
+## Running pods that perform a single completable task
+
+The Job resource runs a pod whose container is not restarted when the process inside finishes successfully. If the node on which the pod is running fails before the completion of the process, the pod is rescheduled to a new node.
+
+From `exporter.yaml`. Note that the `spec.template.spec.restartPolicy`, which defaults to `Always` for pods, has been set to `OnFailure`. The Job will be invalid if it uses the `Always` policy. Additionally, the label selector has been omitted and will be filled in manually based on the template's labels.
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: batch-job
+spec:
+  template:
+    metadata:
+      labels:
+        app: batch-job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: main
+        image: luksa/batch-job
+```
+
+Completed pods won't be deleted. This allows you to see the logs with `kubectl logs <pod-name>`.
