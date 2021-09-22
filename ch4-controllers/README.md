@@ -133,3 +133,33 @@ You can scale down in the same manner.
 ### Deleting a ReplicationController
 
 You can delete a ReplicationController with `kubectl delete rc kubia`. By default, this will also delete that ReplicationController's pods. To keep the pods, run with the `--cascade=false` flag.
+
+## Using ReplicaSets instead of ReplicationControllers
+
+ReplicaSets are the replacement for the now-deprecated ReplicationController. Here we will make one manually, but they are usually created automatically when you make a Deployment resource. ReplicaSets are like ReplicationControllers, but you can use the full range of label selection patterns on them (instead of just `key=value`, you also have `key!=value`, boolean operators, selecting based on the presence/absence of a key, etc.).
+
+### Defining a ReplicaSet
+
+From `kubia-replicaset.yaml`. Note the change in API version.
+
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kubia
+  template:
+    metadata:
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - name: kubia
+        image: luksa/kubia
+```
+
+Then run `kubectl create -f kubia-replicaset.yaml`.
