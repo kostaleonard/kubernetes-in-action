@@ -225,3 +225,5 @@ spec:
       - name: main
         image: luksa/ssd-monitor
 ```
+
+Label a node with `disk=ssd` and then use `kubectl create`.
