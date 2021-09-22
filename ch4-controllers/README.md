@@ -192,3 +192,36 @@ spec:
       - name: kubia
         image: luksa/kubia
 ```
+
+## Running exactly one pod on each node with DaemonSets
+
+Sometimes you want to run a pod exactly once on each node in the cluster. An example of this use case might be infrastructure-related pods that perform system-level operations like log collection or resource monitoring. DaemonSets fill this use case. They are like ReplicaSets, but they automatically create one replica of the pod on each node in the cluster. You can also deploy pods to only those nodes that match certain labels (usually hardware-oriented, like `disk=ssd`).
+
+With DaemonSets, if a node goes down, a replacement pod is not created. But if a new node is added to the cluster, the DaemonSet will deploy a pod to it.
+
+**Note: Even if a pod is made "unschedulable" to prevent pods from being deployed to it, a DaemonSet will still deploy its pod to those nodes because the DaemonSet bypasses the Kubernetes Scheduler entirely. This is usually desirable, since DaemonSets are meant to run system services that usually need to run even on unschedulable nodes.**
+
+### Creating a DaemonSet YAML definition
+
+From `ssd-monitor-daemonset.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ssd-monitor
+spec:
+  selector:
+    matchLabels:
+      app: ssd-monitor
+  template:
+    metadata:
+      labels:
+        app: ssd-monitor
+    spec:
+      nodeSelector:
+        disk: ssd
+      containers:
+      - name: main
+        image: luksa/ssd-monitor
+```
