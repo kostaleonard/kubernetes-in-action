@@ -163,3 +163,32 @@ spec:
 ```
 
 Then run `kubectl create -f kubia-replicaset.yaml`.
+
+### Using the ReplicaSet's more expressive label selectors
+
+The `spec.selector.matchLabels` selector is the less expressive way to select by labels; you can also use `spec.selector.matchExpressions`. Each expression must contain a `key`, an `operator`, and possibly (depending on the operator) a list of `values`. Valid operators include `In`, `NotIn`, `Exists`, and `DoesNotExist`. You can use multiple expressions (they are AND-ed).
+
+From `kubia-replicaset-matchexpressions.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - kubia
+  template:
+    metadata:
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - name: kubia
+        image: luksa/kubia
+```
