@@ -40,3 +40,26 @@ First list the pods with `kubectl get pods` and choose one from which to execute
 #### Configuring session affinity on the Service
 
 Normally, the Service will redirect traffic to a randomly selected pod. But, you can configure a Service to bind a new client with a pod so that the same client will always connect to the same pod. This is called session affinity. You can configure it with the `sessionAffinity` field in the Service yaml.
+
+#### Exposing multiple ports in the same Service
+
+A Service can forward multiple ports to client pods. From `kubia-svc-multi-port.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia-multi-port
+spec:
+  ports: 
+  - name: http
+    port: 80
+    targetPort: 8080
+  - name: https 
+    port: 443
+    targetPort: 8443
+  selector:
+    app: kubia
+```
+
+#### Using named ports
