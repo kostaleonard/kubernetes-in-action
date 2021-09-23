@@ -301,3 +301,41 @@ spec:
       - name: main
         image: luksa/batch-job
 ```
+
+### Limiting the time allowed for a Job to complete
+
+To limit the time allowed for a Job to complete, use `spec.activeDeadlineSeconds`. You can also configure how many times a Job can be retried before it is marked as failed with `spec.backoffLimit`.
+
+## Scheduling Jobs to run periodically or once in the future
+
+Kubernetes supports the CronJob resource to run periodic tasks.
+
+### Creating a CronJob
+
+Here is an example of a CronJob that runs every 15 minutes. From `cronjob.yaml`:
+
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: batch-job-every-fifteen-minutes
+spec:
+  schedule: "0,15,30,45 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: periodic-batch-job
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: main
+            image: luksa/batch-job
+```
+
+Since CronJobs are a separate resource from Jobs (CronJobs create Jobs), you can find them with `kubectl get cronjobs`.
+
+You can also specify a deadline by which the new Job must be started or else it will be considered a failure. Set this with the `startingDeadlineSeconds` field. **Note that the granularity cannot be lower than 10 seconds, because Kubernetes checks for new Jobs to schedule every 10 seconds.**
+
+A CronJob may accidentally create two Jobs or zero Jobs instead of exactly one. To combat this problem, the CronJob's template Job should be idempotent (repeating an operation should not lead to unwanted results), and should pick up any work that may have been missed by a previous Job.
