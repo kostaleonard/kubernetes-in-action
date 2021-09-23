@@ -33,4 +33,10 @@ spec:
 
 #### Remotely executing commands in running containers
 
+First list the pods with `kubectl get pods` and choose one from which to execute a command. Next, find the cluster IP address of the service with `kubectl get svc`. Then, run exec with `kubectl exec <pod-name> -- curl -s <svc-ip>`.
 
+**Note: Don't forget the double dash to separate the `kubectl` args from the command args.**
+
+#### Configuring session affinity on the Service
+
+Normally, the Service will redirect traffic to a randomly selected pod. But, you can configure a Service to bind a new client with a pod so that the same client will always connect to the same pod. This is called session affinity. You can configure it with the `sessionAffinity` field in the Service yaml.
