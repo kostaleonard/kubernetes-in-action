@@ -118,3 +118,44 @@ Instead of running `kubectl exec` every time you want to run something in a pod'
 From inside the container, you can see that `curl kubia.default.svc.cluster.local`, `curl kubia.default`, and `curl kubia` all hit the service.
 
 **Note: The cluster IP of a service is a virtual IP, which only has meaning when combined with a port. This means that layer 3 protocols (e.g., ICMP) won't work on the virtual IP.**
+
+## Connecting to services living outside the cluster
+
+Sometimes you want to use a service to redirect connections to external IPs instead of pods in the cluster.
+
+### Introducing service endpoints
+
+Endpoints is a Kubernetes resource that sits between Services and pods. A Service stores in the Endpoints resource a list of IP/port pairs that correspond with the pods the service exposes. See more about Endpoints with `kubectl get endpoints`.
+
+### Manually configuring service endpoints
+
+A Service will automatically configure Endpoints based on its label selector, but if the label selector is left unspecified, you can configure Endpoints manually.
+
+First create a Service without a selector. From `external-service.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-service
+spec:
+  ports:
+  - port: 80
+```
+
+Next create an Endpoints resource for the Service. The name of the Endpoints object must match the name of the service. From `external-service-endpoints.yaml`:
+
+```yaml
+apiVersion: v1 
+kind: Endpoints
+metadata:
+  name: external-service
+subsets:
+  - addresses:
+    - ip: 11.11.11.11 
+    - ip: 22.22.22.22
+    ports:
+    - port: 80
+```
+
+Now pods within the cluster can connect to the service and the connections will be load balanced between the external IPs.
