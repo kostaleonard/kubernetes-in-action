@@ -63,3 +63,44 @@ spec:
 ```
 
 #### Using named ports
+
+You can also name a pod's ports and refer to them by those names in the Service spec. This can clarify the purpose of the service when using non-standard ports, and also be helpful when you decide to change the port number in the pod spec without changing the service spec. The service will correctly send traffic to the old port on the old pods, and the new port on the new pods. Here is an example pod definition:
+
+```yaml
+kind: Pod
+spec:
+  containers:
+  - name: kubia
+    ports:
+    - name: http
+      containerPort: 8080
+    - name: https
+      containerPort: 8443
+...
+
+```
+
+The corresponding Service definition:
+
+```yaml
+apiVersion: v1
+kind: Service
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  - name: https
+    port: 443
+    targetPort: https
+...
+
+```
+
+### Discovering services
+
+Services have static IP addresses with which clients can interact. But how do pods learn about the IP addresses of services?
+
+#### Discovering services through environment variables
+
+When a pod is created, Kubernetes adds environment variables for all existing services. If the service was created after the pods, then the pods will have to be destroyed and recreated. To see the environment variables, run `kubectl exec <pod-name> -- env`. You will see environment variables like `KUBIA_SERVICE_HOST` that indicate the location of the service.
