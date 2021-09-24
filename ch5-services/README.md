@@ -104,3 +104,15 @@ Services have static IP addresses with which clients can interact. But how do po
 #### Discovering services through environment variables
 
 When a pod is created, Kubernetes adds environment variables for all existing services. If the service was created after the pods, then the pods will have to be destroyed and recreated. To see the environment variables, run `kubectl exec <pod-name> -- env`. You will see environment variables like `KUBIA_SERVICE_HOST` that indicate the location of the service.
+
+#### Discovering services through DNS
+
+Pods can also use DNS (available from the DNS pod in the `kube-system` namespace) to discover services. Pods can open a connection using the FQDN, which has the form `<svc-name>.<namespace>.<cluster-domain-suffix>`. In our example, the FQDN for the `kubia` service running in the `default` namespace is `kubia.default.svc.cluster.local`. But, you can omit the cluster suffix and, if running in the same namespace, the namespace. So, the service can be reached at the FQDN `kubia`.
+
+We can demonstrate this by running `kubectl exec <pod-name> -- curl -s kubia`.
+
+#### Running a shell in a pod's container
+
+Instead of running `kubectl exec` every time you want to run something in a pod's container, you can also enter a shell directly with `kubectl exec -it <pod-name> -- bash`.
+
+From inside the container, you can see that `curl kubia.default.svc.cluster.local`, `curl kubia.default`, and `curl kubia` all hit the service.
