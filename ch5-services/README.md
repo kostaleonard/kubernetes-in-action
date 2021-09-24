@@ -159,3 +159,23 @@ subsets:
 ```
 
 Now pods within the cluster can connect to the service and the connections will be load balanced between the external IPs.
+
+### Creating an alias for an external service
+
+You can also expose an external Service by FQDN by setting the `externalName` field in the Service spec. Notice that the Service type is now `ExternalName`, not `ClusterIP`. From `external-service-externalname.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-service
+spec:
+  type: ExternalName
+  externalName: someapi.somecompany.com
+  ports:
+  - port: 80
+```
+
+Pods will now be able to connect to `someapi.somecompany.com:80` via `external-service.default.svc.cluster.local` or just `external-service`. `ExternalName` services are implemented at the DNS level, and don't get a cluster IP address.
+
+## Exposing services to external clients
