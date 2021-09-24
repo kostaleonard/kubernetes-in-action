@@ -116,3 +116,5 @@ We can demonstrate this by running `kubectl exec <pod-name> -- curl -s kubia`.
 Instead of running `kubectl exec` every time you want to run something in a pod's container, you can also enter a shell directly with `kubectl exec -it <pod-name> -- bash`.
 
 From inside the container, you can see that `curl kubia.default.svc.cluster.local`, `curl kubia.default`, and `curl kubia` all hit the service.
+
+**Note: The cluster IP of a service is a virtual IP, which only has meaning when combined with a port. This means that layer 3 protocols (e.g., ICMP) won't work on the virtual IP.**
