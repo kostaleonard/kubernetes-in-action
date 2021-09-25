@@ -179,3 +179,40 @@ spec:
 Pods will now be able to connect to `someapi.somecompany.com:80` via `external-service.default.svc.cluster.local` or just `external-service`. `ExternalName` services are implemented at the DNS level, and don't get a cluster IP address.
 
 ## Exposing services to external clients
+
+We want to be able to expose some services (like web servers) to external clients. We have 3 options to accomplish this:
+
+1. Setting the service type to NodePort.
+1. Setting the service type to LoadBalancer, an extension of the NodePort type.
+1. Creating an Ingress resource.
+
+### Using a NodePort service
+
+Creating a NodePort service causes Kubernetes to reserve a port on every node in the cluster (the same on all of them) and forward incoming connections to the service.
+
+#### Creating a NodePort service
+
+From `kubia-svc-nodeport.yaml`. `port` refers to the port of the service's internal cluster IP; `targetPort` is the port to which the service forwards traffic; `nodePort` is the port that makes the service accessible from all nodes. Specifying the `nodePort` is not mandatory, and Kubernetes will choose a port if omitted.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia-nodeport
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30123
+  selector:
+    app: kubia
+```
+
+Once the NodePort service is created, you can access your service through any one of the nodes' external IP addresses on port 30123 (you may have to change some firewall rules).
+
+**Note: When using minikube, you can access your NodePort services using `minikube service <service-name>`. This will establish a tunnel into the cluster.**
+
+Now your service is accessible externally. But how can we load balance between the nodes and ensure that clients can always connect to the service even if one of the nodes goes down? For that, we will use a LoadBalancer service.
+
+### Exposing a service through an external load balancer
