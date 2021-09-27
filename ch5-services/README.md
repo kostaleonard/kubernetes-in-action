@@ -219,6 +219,8 @@ Now your service is accessible externally. But how can we load balance between t
 
 The load balancer service will have its own unique, publicly accessible IP address and will redirect all connections to your service. If your Kubernetes cluster does not support LoadBalancer services (e.g., minikube), the load balancer will not be provisioned, but the service will still function as a NodePort service since LoadBalancer is an extension of NodePort.
 
+Your pods must still be externally routable for the load balancer to work properly. The load balancer exists outside of the cluster.
+
 #### Creating a LoadBalancer service
 
 From `kubia-svc-loadbalancer.yaml`. We leave the node port unspecified, letting Kubernetes choose.
@@ -238,3 +240,13 @@ spec:
 ```
 
 You can see the load balancer redirect you to different pods with `curl <svc-external-ip>` or `kubectl exec <pod-name> -- curl -s <svc-cluster-ip>` (the latter will always work and is useful if you can't obtain an external IP, as with minikube).
+
+### Understanding the peculiarities of external connections
+
+You can configure a service to redirect external traffic only to pods running on the node that received the connection by specifying the `externalTrafficPolicy: Local` field in spec. This will prevent unneccessary network hops, but if the node that received the traffic has no pods belonging to the service, the connection will hang. To get around this, you need to make sure the load balancer forwards connections only to nodes that have at least one such pod.
+
+There is also no guarantee that the client IP is preserved from an external connection.
+
+## Exposing services externally through an Ingress resource
+
+Whereas each LoadBalancer service requires its own load balancer with its own public IP address, an Ingress requires only 1 IP address and can provide access to many services. Ingresses operate at the application layer and can provide features like cookie-based session affinity unavailable when using services.
