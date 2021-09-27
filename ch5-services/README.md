@@ -216,3 +216,25 @@ Once the NodePort service is created, you can access your service through any on
 Now your service is accessible externally. But how can we load balance between the nodes and ensure that clients can always connect to the service even if one of the nodes goes down? For that, we will use a LoadBalancer service.
 
 ### Exposing a service through an external load balancer
+
+The load balancer service will have its own unique, publicly accessible IP address and will redirect all connections to your service. If your Kubernetes cluster does not support LoadBalancer services (e.g., minikube), the load balancer will not be provisioned, but the service will still function as a NodePort service since LoadBalancer is an extension of NodePort.
+
+#### Creating a LoadBalancer service
+
+From `kubia-svc-loadbalancer.yaml`. We leave the node port unspecified, letting Kubernetes choose.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia-loadbalancer
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: kubia
+```
+
+You can see the load balancer redirect you to different pods with `curl <svc-external-ip>` or `kubectl exec <pod-name> -- curl -s <svc-cluster-ip>` (the latter will always work and is useful if you can't obtain an external IP, as with minikube).
