@@ -250,3 +250,38 @@ There is also no guarantee that the client IP is preserved from an external conn
 ## Exposing services externally through an Ingress resource
 
 Whereas each LoadBalancer service requires its own load balancer with its own public IP address, an Ingress requires only 1 IP address and can provide access to many services. Ingresses operate at the application layer and can provide features like cookie-based session affinity unavailable when using services.
+
+**Note: To use Ingress, you may need to run minikube using the hyperkit driver (`minikube start --driver=hyperkit`) and then enable the ingress addon (`minikube addons enable ingress`).**
+
+### Creating an Ingress resource
+
+**Note: To create an Ingress, you must have an Inrgess controller running in your cluster. You can confirm this with `kubectl get pods --all-namespaces`.**
+
+From `kubia-ingress.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kubia
+spec:
+  rules:
+  - host: kubia.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kubia-nodeport
+            port:
+              number: 80
+```
+
+Your service is now accessible through [http://kubia.example.com](http://kubia.example.com) as long as the domain name resolves to the IP of the Ingress controller.
+
+### Accessing the service through the Ingress
+
+First, get the Ingress controller's IP address with `kubectl get ingresses`.
+
+To make it so that your host resolves the domain `kubia.example.com` to the Ingress controller's IP, you can either configure your DNS server to resolve the domain or you can add the following line to `/etc/hosts`: `<server-ip> kubia.example.com`. Then, you should be able to `curl http://kubia.example.com` and hit one of the pods. 
