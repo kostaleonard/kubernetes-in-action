@@ -284,4 +284,12 @@ Your service is now accessible through [http://kubia.example.com](http://kubia.e
 
 First, get the Ingress controller's IP address with `kubectl get ingresses`.
 
-To make it so that your host resolves the domain `kubia.example.com` to the Ingress controller's IP, you can either configure your DNS server to resolve the domain or you can add the following line to `/etc/hosts`: `<server-ip> kubia.example.com`. Then, you should be able to `curl http://kubia.example.com` and hit one of the pods. 
+To make it so that your host resolves the domain `kubia.example.com` to the Ingress controller's IP, you can either configure your DNS server to resolve the domain or you can add the following line to `/etc/hosts`: `<server-ip> kubia.example.com`. Then, you should be able to `curl http://kubia.example.com` and hit one of the pods.
+
+### Exposing multiple services through the same Ingress
+
+Ingresses can contain paths to multiple hosts (domains) and paths to mutliple services on each host.
+
+### Configuring Ingress to handle TLS traffic
+
+
