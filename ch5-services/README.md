@@ -330,4 +330,42 @@ spec:
 
 ```
 
-You can then send requests with `curl -k -v https://kubia.example.com`.
+You can then send requests with `curl -k -v https://kubia.example.com`. You will have to use `-k` (insecure) for self-signed certificates. `curl http://kubia.example.com` will get a `308 Permanent Redirect` response from the Ingress (this is intended behavior); you can follow redirects with `-L`, so you can reach the service with `curl -L -k http://kubia.example.com`.
+
+## Signaling when a pod is ready to accept connections
+
+Pods usually need some time to start up before they are ready to accept connections.
+
+### Introducing readiness probes
+
+Readiness probes indicate when a pod is ready to accept requests from a service. When a probe returns success, the pod is considered ready. Readiness probes come in the same 3 types as liveness probes (exec, HTTP GET, TCP Socket). If a pod reports that it is not ready, it is removed from any services' endpoints; when it becomes ready again, it is added back. Failing a readiness probe does not cause a pod to restart.
+
+From `kubia-rc-readinessprobe.yaml`. This probe succeeds if `/var/ready` exists in the container. Real-world probes should check that the app is ready to receive requests.
+
+```yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    app: kubia
+  template:
+    metadata:
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - name: kubia
+        image: luksa/kubia
+        readinessProbe:
+          exec:
+            command:
+            - ls
+            - /var/ready
+        ports:
+        - containerPort: 8080
+```
+
+
