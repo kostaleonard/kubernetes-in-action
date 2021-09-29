@@ -292,4 +292,42 @@ Ingresses can contain paths to multiple hosts (domains) and paths to mutliple se
 
 ### Configuring Ingress to handle TLS traffic
 
+You can configure the Ingress to handle TLS traffic using a Secret resource. The connection will be passed to the pod without TLS, so the pod can just handle HTTP traffic.
 
+**Question: Does this violate principles of zero-trust architecture? If one of the nodes was compromised, wouldn't it be able to snoop on unencrypted traffic?**
+
+To create a Secret, you need to generate a private key and certificate.
+
+```bash
+openssl genrsa -out tls.key 2048
+openssl req -new -x509 -key tls.key -out tls.cert -days 360 -subj /CN=kubia.example.com
+kubectl create secret tls tls-secret --cert=tls.cert --key=tls.key
+```
+
+Now we can update the Ingress manifest to accept TLS connections. From `kubia-ingress-tls.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kubia
+spec:
+  tls:
+  - hosts:
+    - kubia.example.com
+    secretName: tls-secret
+  rules:
+  - host: kubia.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kubia-nodeport
+            port:
+              number: 80
+
+```
+
+You can then send requests with `curl -k -v https://kubia.example.com`.
