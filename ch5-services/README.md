@@ -368,4 +368,40 @@ spec:
         - containerPort: 8080
 ```
 
+## Using a headless service for discovering individual pods
 
+Sometimes a client (or pod) needs to connect to all pods backing a service. If you set the service's `clusterIP` field to `None`, then the service won't get a cluster IP and DNS lookups on the service will return the pod IPs instead of a single service IP. This is called a headless service.
+
+### Creating a headless service
+
+From `kubia-svc-headless.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia-headless
+spec:
+  clusterIP: None
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: kubia
+```
+
+### Discovering pods through DNS
+
+You can now get the service's pod IPs by performing a DNS lookup on the service (from inside the cluster). Since the `kubia` container doesn't have the `nslookup` and `dig` binaries to perform DNS lookups, we'll run a pod with a container that has those tools (`tutum/dnsutils`). The `--generator=run-pod/v1` flag tells Kubernetes to create the pod directly, without a ReplicationController (or similar) to manage it.
+
+```bash
+kubectl run dnsutils --image=tutum/dnsutils --generator=run-pod/v1 --command -- sleep infinity
+```
+
+Then, run a DNS lookup from the new pod with:
+
+```bash
+kubectl exec dnsutils -- nslookup kubia-headless
+```
+
+Clients connect directly to the pods, instead of through the service proxy. Headless services still provide load balancing, but through the DNS round robin mechanism rather than the service proxy.
