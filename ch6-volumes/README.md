@@ -79,3 +79,7 @@ spec:
 ```
 
 **Note: If you want to keep the Volume in sync with the git repository, you can use a sidecar container (a container that augments the operation of the main container of the pod) to get the latest changes regularly. See Chapter 18 for a worked-through example.**
+
+**Note: You can't directly clone a private Git repository with a `gitRepo` Volume, but you can with a sidecar container.**
+
+## Accessing files on the worker node's filesystem
