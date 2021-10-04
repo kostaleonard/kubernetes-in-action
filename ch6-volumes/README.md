@@ -45,3 +45,37 @@ spec:
   - name: html
     emptyDir: {}
 ```
+
+You can also set the Volume's `medium` property to `Memory` instead of leaving it at the default value, which will use disk storage.
+
+### Using a Git repository as the starting point for a volume
+
+You can also populate a Volume with a Git repository. The Volume directory will be filled before the Pod is started. The Volume will not be kept up to date with the latest commits once the Pods are running, but Pods can be restarted to get the latest changes.
+
+From `gitrepo-volume-pod.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  nameL gitrepo-volume-pod
+spec:
+  containers:
+  - image: nginx:alpine
+    name: web-server
+    volumeMounts:
+    - name: html
+      mountPath: /usr/share/nginx/html
+      readOnly: true
+    ports:
+    - containerPort: 80
+      protocol: TCP
+  volumes:
+  - name: html
+    gitRepo:
+      repository: https://github.com/kostaleonard/kubia-website-example.git
+      revision: master
+      directory: .
+```
+
+**Note: If you want to keep the Volume in sync with the git repository, you can use a sidecar container (a container that augments the operation of the main container of the pod) to get the latest changes regularly. See Chapter 18 for a worked-through example.**

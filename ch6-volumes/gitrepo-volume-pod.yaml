@@ -1,14 +1,9 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: fortune
+  nameL gitrepo-volume-pod
 spec:
   containers:
-  - image: kostaleonard/fortune
-    name: html-generator
-    volumeMounts:
-    - name: html
-      mountPath: /var/htdocs
   - image: nginx:alpine
     name: web-server
     volumeMounts:
@@ -20,5 +15,7 @@ spec:
       protocol: TCP
   volumes:
   - name: html
-    emptyDir:
-      medium: Memory
+    gitRepo:
+      repository: https://github.com/kostaleonard/kubia-website-example.git
+      revision: master
+      directory: .
