@@ -83,3 +83,9 @@ spec:
 **Note: You can't directly clone a private Git repository with a `gitRepo` Volume, but you can with a sidecar container.**
 
 ## Accessing files on the worker node's filesystem
+
+Sometimes a Pod will need to interface directly with the host node's filesystem (think DaemonSets and pods that work with system-level resources like hardware). This is where we want a `hostPath` Volume.
+
+### Introducing the `hostPath` Volume
+
+A `hostPath` Volume points to a specific file or directory on the node's filesystem. `hostPath` Volumes offer persistent storage, but only on the node to which the Pod is scheduled (in general `hostPath` Volumes should not be used to persist data unless it has to do with the node itself, e.g., system-level resources).
