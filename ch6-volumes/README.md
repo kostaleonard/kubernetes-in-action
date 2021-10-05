@@ -89,3 +89,55 @@ Sometimes a Pod will need to interface directly with the host node's filesystem 
 ### Introducing the `hostPath` Volume
 
 A `hostPath` Volume points to a specific file or directory on the node's filesystem. `hostPath` Volumes offer persistent storage, but only on the node to which the Pod is scheduled (in general `hostPath` Volumes should not be used to persist data unless it has to do with the node itself, e.g., system-level resources).
+
+### Examining system pods that use `hostPath` Volumes
+
+Try running `kubectl describe pod <pod-name> --namespace kube-system` on some of the Kubernetes system pods. Many of them have `hostPath` Volumes pointing to log directories, certificates, or Kubernetes config files.
+
+## Using persistent storage
+
+Here we will create a pod hosting a MongoDB NoSQL database. Your persistent storage options will vary based on your underlying hardware. For minikube, you can simulate persistent storage with a `hostPath` volume.
+
+### Using a GCE Persistent Disk in a pod volume
+
+From `mongodb-pod-gcepd.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongodb
+spec:
+  volumes:
+  - name: mongodb-data
+    gcePersistentDisk:
+      pdName: mongodb
+      fsType: ext4
+  containers:
+  - image: mongo
+    name: mongodb
+    volumeMounts:
+    - name: mongodb-data
+      mountPath: /data/db
+    ports:
+    - containerPort: 27017
+      protocol: TCP
+```
+
+Create the pod and insert an object into the database.
+
+```bash
+kubectl exec -it mongodb mongo
+> use mystore
+> db.foo.insert({name:'foo'})
+```
+
+You can now delete the pod, create a new pod, and verify that the item is present.
+
+```bash
+kubectl delete pod mongodb
+kubectl create -f mongodb-pod-gcepd.yaml
+kubectl exec -it mongodb mongo
+> use mystore
+> db.foo.find()
+```
