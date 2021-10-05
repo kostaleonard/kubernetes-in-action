@@ -58,7 +58,7 @@ From `gitrepo-volume-pod.yaml`:
 apiVersion: v1
 kind: Pod
 metadata:
-  nameL gitrepo-volume-pod
+  name: gitrepo-volume-pod
 spec:
   containers:
   - image: nginx:alpine
