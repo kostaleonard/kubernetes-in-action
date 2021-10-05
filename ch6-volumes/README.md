@@ -141,3 +141,21 @@ kubectl exec -it mongodb mongo
 > use mystore
 > db.foo.find()
 ```
+
+### Using other types of persistent storage
+
+If your Kubernetes cluster is running in AWS EC2, you can use an `awsElasticBlockStore` volume as persistent storage. If the cluster is running in Microsoft Azure, you can use the `azureFile` or `azureDisk` volumes. If you are running your own set of servers, you can use an `nfs` volume (and many other options).
+
+The problem with the way we've approached these persistent volumes so far is that they are tightly coupled with the underlying infrastructure implementation. What if we want to use a different set of hardware? Our pods won't work correctly.
+
+## Decoupling pods from the underlying storage technology
+
+The goal of Kubernetes is to hide the underlying infrastructure from developers and applications. Developers can request a certain amount of persistent storage from the cluster using PersistentVolumes and PersistentVolumeClaims, and Kubernetes will provision the storage.
+
+### Introducing PersistentVolumes and PersistentVolumeClaims
+
+First, the cluster administrator sets up an underlying storage system (cloud or on-premises) and registers it in Kubernetes by creating a PersistentVolume resource. A cluster user then creates a PersistentVolumeClaim specifying the minimum size and access mode they require, and Kubernetes binds the PersistentVolumeClaim to a PersistentVolume that meets requirements. Pods can then use the PersistentVolumeClaim as a volume.
+
+### Creating a PersistentVolume
+
+
