@@ -158,7 +158,7 @@ First, the cluster administrator sets up an underlying storage system (cloud or 
 
 ### Creating a PersistentVolume
 
-We will create a PersistentVolume that uses `hostPath` so that it can be used with minikube. You can also use `gcePersistentDisk`, etc. as the storage mechanism.
+We will create a PersistentVolume that uses `hostPath` so that it can be used with minikube. You can also use `gcePersistentDisk`, etc. as the storage mechanism. If the storage mechanism changes at any point, the PersistentVolumes are the only resources that need to change.
 
 From `mongodb-pv-hostpath.yaml`:
 
@@ -180,3 +180,31 @@ spec:
 ```
 
 **Note: PersistentVolumes don't belong to any namespace--like nodes, they are a cluster-level resource.**
+
+### Claiming a PersistentVolume by creating a PersistentVolumeClaim
+
+PersistentVolumeClaims allow pods to have persistent data even when nodes fail.
+
+From `mongodb-pvc.yaml`:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim 
+metadata:
+  name: mongodb-pvc
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ""
+```
+
+Once the PersistentVolumeClaim is created, it is bound to the PersistentVolume.
+
+**Note: The access modes pertain to the number of worker nodes that can use the volume at the same time, not the number of pods!**
+
+### Using a PersistentVolumeClaim in a pod
+
+
