@@ -158,4 +158,25 @@ First, the cluster administrator sets up an underlying storage system (cloud or 
 
 ### Creating a PersistentVolume
 
+We will create a PersistentVolume that uses `hostPath` so that it can be used with minikube. You can also use `gcePersistentDisk`, etc. as the storage mechanism.
 
+From `mongodb-pv-hostpath.yaml`:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /tmp/kubia
+    type: Directory
+```
+
+**Note: PersistentVolumes don't belong to any namespace--like nodes, they are a cluster-level resource.**
