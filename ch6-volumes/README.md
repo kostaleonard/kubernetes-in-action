@@ -207,4 +207,27 @@ Once the PersistentVolumeClaim is created, it is bound to the PersistentVolume.
 
 ### Using a PersistentVolumeClaim in a pod
 
+You can now tie the storage device to a pod by referencing the PersistentVolumeClaim in the pod's manifest.
 
+From `mongodb-pod-pvc.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongodb
+spec:
+  containers:
+  - image: mongo
+    name: mongodb
+    volumeMounts:
+    - name: mongodb-data
+      mountPath: /data/db
+    ports:
+    - containerPort: 27017
+      protocol: TCP
+  volumes:
+  - name: mongodb-data
+    persistentVolumeClaim:
+      claimName: mongodb-pvc
+```
