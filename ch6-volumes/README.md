@@ -176,7 +176,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /tmp/kubia
-    type: Directory
+    type: DirectoryOrCreate
 ```
 
 **Note: PersistentVolumes don't belong to any namespace--like nodes, they are a cluster-level resource.**
@@ -231,3 +231,7 @@ spec:
     persistentVolumeClaim:
       claimName: mongodb-pvc
 ```
+
+You can now create the pod and check that the item we created earlier is in the database (if on minikube, create the item, delete the pod, recreate the pod, and check for the item as described above).
+
+**Note: When using a `hostPath` Volume on minikube, the directory is created *in the minikube container*, not on the host OS; to see the contents that are persisted, run `minikube ssh` first.**

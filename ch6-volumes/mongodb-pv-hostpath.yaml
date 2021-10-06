@@ -11,4 +11,4 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /tmp/kubia
-    type: Directory
+    type: DirectoryOrCreate
