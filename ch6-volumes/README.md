@@ -235,3 +235,40 @@ spec:
 You can now create the pod and check that the item we created earlier is in the database (if on minikube, create the item, delete the pod, recreate the pod, and check for the item as described above).
 
 **Note: When using a `hostPath` Volume on minikube, the directory is created *in the minikube container*, not on the host OS; to see the contents that are persisted, run `minikube ssh` first.**
+
+### Recycling PersistentVolumes
+
+PersistentVolumes, by default, will not bind to a new PersistentVolumeClaim after the original PersistentVolumeClaim is deleted (although a new pod can use the old PersistentVolumeClaim). This is done to preserve data that the cluster administrator may want to clean up/keep. It is also done for privacy; a pod from a different namespace (likely belonging to a different cluster tenant) could read the data stored in the PersistentVolume if it became available again.
+
+This behavior is specified in the PersistentVolume's `persistentVolumeReclaimPolicy`, which by default is set to `Retain`. To manually recycle the volume, you have to delete and recreate the PersistentVolume resource. While you do this, you can do whatever you need to with the underlying storage (clear the files, etc.).
+
+There are two other reclaim policies.
+
+* `Recycle`: Clears the volume's contents and makes the volume available to be claimed again.
+* `Delete`: Deletes the underlying storage.
+
+## Dynamic provisioning of PersistentVolumes
+
+Instead of having a cluster administrator manually provision a PersistentVolume for every storage resource available to the cluster, the admin can deploy a PersistentVolume provisioner and define one or more StorageClass objects to let users choose which kind of PersistentVolume they want.
+
+**Note: StorageClass resources, like PersistentVolumes, are not namespaced.**
+
+StorageClasses allow the system to create a new PersistentVolume every time one is requested through a PersistentVolumeClaim.
+
+### Defining the available storage types through StorageClass resources
+
+From `storageclass-fast-hostpath.yaml`. The provisioner is the Kubernetes plugin that interfaces with the cloud/on-premises infrastructure to create PersistentVolumes.
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast
+provisioner: k8s.io/minikube-hostpath
+parameters:
+  type: pd-ssd
+```
+
+### Requesting the storage class in a PersistentVolumeClaim
+
+
