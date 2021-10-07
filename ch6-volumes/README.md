@@ -271,4 +271,18 @@ parameters:
 
 ### Requesting the storage class in a PersistentVolumeClaim
 
+From `mongodb-pvc-dp.yaml`:
 
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+spec:
+  storageClassName: fast
+  resources:
+    requests:
+      storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+```
