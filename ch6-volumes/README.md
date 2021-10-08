@@ -286,3 +286,24 @@ spec:
   accessModes:
     - ReadWriteOnce
 ```
+
+### Dynamic provisioning without specifying a storage class
+
+You can also create a PersistentVolumeClaim without specifying the `storageClassName` attribute, in which case the default storage class for the cluster will be used (to find this, run `kubectl get sc`; on minikube, it is called `standard`).
+
+You can also set `storageClassName` to "" if you want the PersistentVolumeClaim to use a pre-provisioned PersistentVolume.
+
+From `mongodb-pvc-dp-nostorageclass.yaml`:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc2
+spec:
+  resources:
+    requests:
+      storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+```
