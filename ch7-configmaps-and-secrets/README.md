@@ -43,3 +43,47 @@ spec:
     emptyDir:
       medium: Memory
 ```
+
+## Setting environment variables for a container
+
+Kubernetes allows you to define environment variables for each container in a pod.
+
+From `fortune-pod-env.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune2s
+spec:
+  containers:
+  - image: luksa/fortune:env
+    env:
+    - name: INTERVAL
+      value: "30"
+    name: html-generator
+    volumeMounts:
+    - name: html
+      mountPath: /var/htdocs
+  - image: nginx:alpine
+    name: web-server
+    volumeMounts:
+    - name: html
+      mountPath: /usr/share/nginx/html
+      readOnly: true
+    ports:
+    - containerPort: 80
+      protocol: TCP
+  volumes:
+  - name: html
+    emptyDir:
+      medium: Memory
+```
+
+You can refer in the yaml to any environment variables you've defined with `$(VAR)` syntax. You can even reference the environment variables in the `command` and `args` attributes.
+
+The drawback of using environment variables to store pod configuration is that you may need separate environment variables, and therefore pod definitions, for development and production. To decouple the configuration from the pod, we will use a ConfigMap resource.
+
+## Decoupling configuration with a ConfigMap
+
+
