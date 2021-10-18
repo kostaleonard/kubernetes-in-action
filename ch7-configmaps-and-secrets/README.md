@@ -103,3 +103,71 @@ kubectl create configmap fortune-config --from-literal=sleep-interval=25
 ```
 
 You can inspect the yaml with `kubectl get configmap fortune-config -o yaml`; we could also have written this ConfigMap in yaml form. Entire configuration files can also be added as values within a ConfigMap using `--from-file`.
+
+### Passing a ConfigMap entry to a container as an environment variable
+
+To get a value from a ConfigMap, your pod can use an environment variable defined in the yaml. From `fortune-pod-env-configmap.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune-env-from-configmap
+spec:
+  containers:
+  - image: luksa/fortune:env
+    env:
+    - name: INTERVAL
+      valueFrom:
+        configMapKeyRef:
+          name: fortune-config
+          key: sleep-interval
+```
+
+### Passing all entries of a ConfigMap as environment variables at once
+
+You can expose all of the keys in a ConfigMap as environment variables at once by setting `envFrom` in the yaml definition.
+
+**Note: Only valid environment variable names will be gathered. Names containing invalid characters, e.g. "-", will be skipped.**
+
+### Passing a ConfigMap entry as a command-line argument
+
+If you want to pass a configuration parameter as a command-line argument to a container's main process, then you can set an environment variable and reference it in `args` (you can't reference the ConfigMap key directly in `args`). From `fortune-pod-args-configmap.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata: 
+  name: fortune-args-from-configmap
+spec:
+  containers:
+  - image: luksa/fortune:args
+    env:
+    - name: INTERVAL
+      valueFrom:
+        configMapKeyRef:
+          name: fortune-config
+          key: sleep-interval
+    args: ["$(INTERVAL)"]
+```
+
+### Using a configMap volume to expose ConfigMap entries as files
+
+When a ConfigMap contains entire files for app configuration, it can be more convenient to expose those to containers as actual files. A configMap volume allows you to expose each entry of a ConfigMap as a file.
+
+From `my-nginx-config.conf`:
+
+```conf
+server {
+  listen        80;
+  server_name   www.kubia.example.com;
+
+  gzip on;
+  gzip_types text/plain application/xml;
+
+  location / {
+    root        /usr/share/nginx/html
+    index       index.html index.htm;
+  }
+}
+```
