@@ -248,3 +248,8 @@ spec:
     subPath: myconfig.conf
 ```
 
+### Updating an app's config without having to restart the app
+
+By using a ConfigMap mounted in a volume (as opposed to command line arguments or environment variables), you can update configuration without having to recreate the pod or restart the container. When you update the ConfigMap, the files in all volumes referencing it are updated automatically; it is then up to the apps in those containers to detect and respond to the update.
+
+You can edit an existing ConfigMap with `kubectl edit configmap <name>`. But it would probably be better to incorporate the change into VCS and reload the pod when you have time.
