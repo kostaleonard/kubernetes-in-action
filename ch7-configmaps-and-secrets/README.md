@@ -171,3 +171,80 @@ server {
   }
 }
 ```
+
+We place this file and the `sleep-interval` file in the `configmap-files` directory. Then, we will create the ConfigMap directly with `kubectl create configmap fortune-config --from-file=configmap-files`.
+
+Now we can create a pod with a configMap Volume that references the ConfigMap we have created. From `fortune-pod-configmap-volume.yaml`:
+
+TODO working offline, took best guess at the config without debugging. See luksa repo for working yaml.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune-configmap-volume
+spec:
+  containers:
+  - image: kostaleonard/fortune:args
+    env:
+    - name: INTERVAL
+      valueFrom:
+        configMapKeyRef:
+          name: fortune-config
+          key: sleep-interval
+    args: ["$(INTERVAL)"]
+    name: html-generator
+    volumeMounts:
+    - name: html
+      mountPath: /var/htdocs
+  - image: nginx:alpine
+    name: web-server
+    volumeMounts:
+    - name: html
+      mountPath: /usr/share/nginx/html
+      readOnly: true
+    - name: config
+      mountPath: /etc/nginx/conf.d
+      readOnly: true
+    ports:
+    - containerPort: 80
+      protocol: TCP
+  volumes:
+  - name: html
+    emptyDir:
+      medium: Memory
+  - name: config
+    configMap:
+      name: fortune-config
+```
+
+If you use this yaml, the `web-server` container will have both `my-nginx-config.conf` and `sleep-interval` in the `/etc/nginx/conf.d` directory. Ideally, `sleep-interval` would be omitted from this directory. To only include certain items from a ConfigMap in the configMap volume, you can specify the `items` property as follows:
+
+```yaml
+...
+  volumes:
+  - name: html
+    emptyDir:
+      medium: Memory
+  - name: config
+    configMap:
+      name: fortune-config
+      items:
+      - key: my-nginx-config.conf
+        path: gzip.conf
+```
+
+**Note: By mounting the volume at `/etc/nginx/conf.d` (a directory), you shadowed all of the files that might have been in that directory. In this case, there were none, but if there were, the consequences could have been disastrous. To avoid this, use the `subPath` property in `volumeMounts`.**
+
+You can mount a specific ConfigMap entry into a specific file with `subPath` as follows. Here, `/etc/someconfig.conf` is a file, not a directory, and `myconfig.conf` is an entry in the ConfigMap.
+
+```yaml
+spec:
+  containers:
+  - image: some/image
+  volumeMounts:
+  - name: myvolume
+    mountPath: /etc/someconfig.conf
+    subPath: myconfig.conf
+```
+
