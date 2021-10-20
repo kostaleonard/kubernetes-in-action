@@ -253,3 +253,15 @@ spec:
 By using a ConfigMap mounted in a volume (as opposed to command line arguments or environment variables), you can update configuration without having to recreate the pod or restart the container. When you update the ConfigMap, the files in all volumes referencing it are updated automatically; it is then up to the apps in those containers to detect and respond to the update.
 
 You can edit an existing ConfigMap with `kubectl edit configmap <name>`. But it would probably be better to incorporate the change into VCS and reload the pod when you have time.
+
+## Using Secrets to pass sensitive data to containers
+
+Sometimes you need to pass sensitive information, such as credentials, to apps in your Kubernetes cluster. Kubernetes provides this functionality with Secrets.
+
+### Introducing Secrets
+
+Secrets can be passed to containers either as environment variables or as files in a volume, although Secrets are actually stored in node memory. Secrets are a first class resource and work in much the same way as ConfigMaps.
+
+### Introducing the default token secret
+
+Running `kubectl get secrets` should reveal at least one Secret of the form `default-token-<something>`. Run `kubectl describe secret default-token-<something>` to see its properties. It has 3 entries: `ca.crt`, `namespace`, and `token`. This Secret allows pods to securely connect to the Kubernetes API server.
