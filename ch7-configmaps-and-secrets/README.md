@@ -274,3 +274,41 @@ We will configure the Nginx server to also serve HTTPS traffic. First generate a
 openssl genrsa -out https.key 2048
 openssl req -new -x509 -key https.key -out https.cert -days 3650 -subj /CN=www.kubia.com
 ```
+
+Now create the secret with the following (`foo` is a test file that contains arbitrary data):
+
+```bash
+kubectl create secret generic fortune-https --from-file=https.key --from-file=https.cert --from-file=foo
+```
+
+As with ConfigMaps, you can also include the entire directory with `from-file`.
+
+### Comparing ConfigMaps and Secrets
+
+Secrets and ConfigMaps are very similar (Kubernetes originally only supported Secrets), but Secrets base64 encode all of their entries because they can contain binary data.
+
+**Note: Since base64 encoding is not encryption, anyone with API access (i.e., they can run `kubectl`) can retrieve or modify secrets. See [kubernetes.io](https://kubernetes.io) for best practices when it comes to securing secrets.**
+
+### Using the Secret in a pod
+
+First update the Nginx configuration to enable SSL. From `my-nginx-config-https.conf`:
+
+```
+server {
+  listen    80;
+  listen    443 ssl;
+  server_name    www.kubia.example.com;
+  ssl_certificate    certs/https.key;
+  ssl_certificate_key    certs/https.key;
+  ssl_protocols    TLSv1 TLSv1.1 TLSv1.2;
+  ssl_ciphers    HIGH:!aNULL:!MD5;
+
+  gzip on;
+  gzip_types text/plain application/xml;
+
+  location / {
+    root    /usr/share/nginx/html
+    index    index.html index.htm;
+  }
+}
+```
