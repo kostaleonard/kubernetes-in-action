@@ -265,3 +265,12 @@ Secrets can be passed to containers either as environment variables or as files 
 ### Introducing the default token secret
 
 Running `kubectl get secrets` should reveal at least one Secret of the form `default-token-<something>`. Run `kubectl describe secret default-token-<something>` to see its properties. It has 3 entries: `ca.crt`, `namespace`, and `token`. This Secret allows pods to securely connect to the Kubernetes API server.
+
+### Creating a Secret
+
+We will configure the Nginx server to also serve HTTPS traffic. First generate a key and certificate.
+
+```bash
+openssl genrsa -out https.key 2048
+openssl req -new -x509 -key https.key -out https.cert -days 3650 -subj /CN=www.kubia.com
+```
