@@ -361,3 +361,11 @@ spec:
     secret:
       secretName: fortune-https
 ```
+
+Secrets can also be exposed as environment variables (similar to how `INTERVAL` was exposed).
+
+**Warning: Secrets can get exposed inadvertently when they are passed as environment variables. Environment variables are passed to child processes and are often written to logs for debugging. Instead, pass Secrets as volume mounts.**
+
+### Understanding image pull Secrets
+
+Kubernetes also uses Secrets when you want to pull a container image from a private registry.
