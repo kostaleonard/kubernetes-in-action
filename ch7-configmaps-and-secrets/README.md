@@ -368,4 +368,27 @@ Secrets can also be exposed as environment variables (similar to how `INTERVAL` 
 
 ### Understanding image pull Secrets
 
-Kubernetes also uses Secrets when you want to pull a container image from a private registry.
+Kubernetes also uses Secrets when you want to pull a container image from a private registry. To pull from a private registry, you need to create a Secret holding the credentials for the Docker registry, and then reference that Secret in the `imagePullSecrets` field of the pod manifest.
+
+First, create a `docker-registry` (not `generic`) secret:
+
+```bash
+kubectl create secret docker-registry mydockerhubsecret --docker-username=kostaleonard --docker-password=<my-password> --docker-email=kostaleonard@gmail.com
+```
+
+Now you can specify the Secret in the pod spec. From `pod-with-private-image.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: private-pod
+spec:
+  imagePullSecrets:
+  - name: mydockerhubsecret
+  containers:
+  - image: kostaleonard/private-image:tag
+    name: main
+```
+
+**Note: If you add the image pull Secret to a ServiceAccount (see chapter 12), you won't have to add the Secret to every pod.**

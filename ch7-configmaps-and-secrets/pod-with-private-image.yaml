@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: private-pod
+spec:
+  imagePullSecrets:
+  - name: mydockerhubsecret
+  containers:
+  - image: kostaleonard/private-image:tag
+    name: main
