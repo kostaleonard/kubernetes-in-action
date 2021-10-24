@@ -59,3 +59,65 @@ spec:
           resource: limits.memory
           divisor: 1Ki
 ```
+
+### Passing metadata through files in a `downwardAPI` volume
+
+You can also expose these metadata through files in a `downwardAPI` volume. If you want to expose a pod's labels or annotations, you have to use a `downwardAPI` volume (this is partly because labels and annotations can have `=` characters as well as newlines and other stop characters, and partly because Kubernetes keeps the `downwardAPI` label/annotation files up to date if those parameters change at any point).
+
+From `downward-api-volume.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: downward
+  labels:
+    foo: bar
+  annotations:
+    key1: value1
+    key2: |
+      multi
+      line
+      value
+spec:
+  containers:
+  - name: main
+    image: busybox
+    command: ["sleep", "9999999"]
+    resources:
+      requests:
+        cpu: 15m
+        memory: 100Ki
+      limits:
+        cpu: 100m
+        memory: 4Mi
+    volumeMounts:
+    - name: downward
+      mountPath: /etc/downward
+  volumes:
+  - name: downward
+    downwardAPI:
+      items:
+      - path: "podName"
+        fieldRef:
+          fieldPath: metadata.name
+      - path: "podNamespace"
+        fieldRef:
+          fieldPath: metadata.namespace
+      - path: "labels"
+        fieldRef:
+          fieldPath: metadata.labels
+      - path: "annotations"
+        fieldRef:
+          fieldPath: metadata.annotations
+      - path: "containerCpuRequestMillicores"
+        resourceFieldRef:
+          containerName: main
+          resource: requests.cpu
+          divisor: 1m
+      - path: "containerMemoryLimitBytes"
+        resourceFieldRef:
+          containerName: main
+          resource: limits.memory
+          divisor: 1
+```
