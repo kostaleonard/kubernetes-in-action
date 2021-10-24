@@ -121,3 +121,15 @@ spec:
           resource: limits.memory
           divisor: 1
 ```
+
+## Talking to the Kubernetes API server
+
+The Downward API can only pass to pods their own metadata. Sometimes you need to access the metadata of other pods or resources, and for that you can talk to the Kubernetes API server.
+
+### Exploring the Kubernetes REST API
+
+First, get the Kubernetes API server IP address with `kubectl cluster-info`. You can see the IP address and port (likely 8443), but you won't be able to connect with `curl`, even if you use `-k` for insecure mode.
+
+Instead, you can run `kubectl proxy` to start a proxy connection to the API server that accepts connections on localhost, vanilla HTTP. The proxy will handle all authentication with the API server.
+
+With the proxy running, sending requests to the proxy will return Kubernetes metadata. For example, `curl localhost:8001/apis/batch` returns a description of the `batch` API group.
