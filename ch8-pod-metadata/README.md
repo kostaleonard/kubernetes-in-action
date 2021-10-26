@@ -133,3 +133,21 @@ First, get the Kubernetes API server IP address with `kubectl cluster-info`. You
 Instead, you can run `kubectl proxy` to start a proxy connection to the API server that accepts connections on localhost, vanilla HTTP. The proxy will handle all authentication with the API server.
 
 With the proxy running, sending requests to the proxy will return Kubernetes metadata. For example, `curl localhost:8001/apis/batch` returns a description of the `batch` API group.
+
+### Talking to the API server from within a pod
+
+Pods won't usually have access to `kubectl proxy`, so if we want to talk to the API server from within a pod, we have to do it differently.
+
+For this example, we will use a container that does nothing (`sleep`), but that has the `curl` command. From `curl.yaml`:
+
+```yaml
+apiVersion: v1 
+kind: Pod
+metadata:
+  name: curl
+spec:
+  containers:
+  - name: main
+    image: tutum/curl
+    command: ["sleep", "9999999"]
+```
