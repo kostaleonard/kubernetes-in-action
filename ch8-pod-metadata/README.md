@@ -151,3 +151,5 @@ spec:
     image: tutum/curl
     command: ["sleep", "9999999"]
 ```
+
+Create the pod and enter into a shell with `kubectl exec -it curl -- bash`. We are trying to interface with the Kubernetes API server, which is exposed at the `kubernetes` service. The IP/port of this service are populated in environment variables in all pods, but we can also just resolve the hostname with DNS by running `curl https://kubernetes`.
