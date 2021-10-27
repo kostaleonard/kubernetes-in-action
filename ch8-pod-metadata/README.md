@@ -153,3 +153,25 @@ spec:
 ```
 
 Create the pod and enter into a shell with `kubectl exec -it curl -- bash`. We are trying to interface with the Kubernetes API server, which is exposed at the `kubernetes` service. The IP/port of this service are populated in environment variables in all pods, but we can also just resolve the hostname with DNS by running `curl https://kubernetes`.
+
+This command will get you a certificate error, which you can ignore with `-k` (do not do this) or you can verify the server's identity. Every pod gets a default Secret with a few items that will allow you to interact securely with the API server. The Secret volume was mounted at `/var/run/secrets/kubernetes.io/serviceaccount/`, and contains `ca.crt`, `namespace`, and `token`. First, add the `--cacert` flag to your `curl` command to verify the identity of the server. It should look like `curl --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt https://kubernetes` (you can also set the `CURL_CA_BUNDLE` environment variable, and then `curl` without the `--cacert` flag). Now you can connect to the server, but you get a 403.
+
+Now you need to authenticate with the server. First, load your token into an environment variable with `TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)`, and then run `curl -H "Authorization: Bearer $TOKEN" https://kubernetes`.
+
+**Note: If you still get a 403, see the note on disabling role-based access control (RBAC) in section 8.2.2. Use this workaround for test purposes only.**
+
+For convenience, load the pod's namespace into an environment variable with `NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)`. Now you can query the API for items in the namespace.
+
+```bash
+# List pods in the namespace.
+curl -H "Authorization: Bearer $TOKEN" https://kubernetes/api/v1/namespaces/$NS/pods
+```
+
+### Simplifying API server communication with ambassador containers
+
+Rather than having your app connect directly to the API server, you can use the ambassador container design pattern. In this model, your pod includes an additional container whose responsibility it is to be a proxy to connect to the API server. Other containers can connect to the ambassador over HTTP on the loopback interface, and the ambassador will connect securely to the API server over HTTPS.
+
+From `curl-with-ambassador.yaml`:
+
+```yaml
+```
