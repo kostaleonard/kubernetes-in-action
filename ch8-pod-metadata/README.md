@@ -174,4 +174,17 @@ Rather than having your app connect directly to the API server, you can use the 
 From `curl-with-ambassador.yaml`:
 
 ```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl-with-ambassador
+spec:
+  containers:
+  - name: main
+    image: tutum/curl
+    command: ["sleep", "9999999"]
+  - name: ambassador
+    image: luksa/kubectl-proxy:1.6.2
 ```
+
+Create the pod and enter the main container with `kubectl exec -it curl-with-ambassador -c main -- bash`. From the main container, you can hit the API through `curl localhost:8001` (8001 is the default port for `kubectl proxy`).
