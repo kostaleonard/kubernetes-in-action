@@ -188,3 +188,9 @@ spec:
 ```
 
 Create the pod and enter the main container with `kubectl exec -it curl-with-ambassador -c main -- bash`. From the main container, you can hit the API through `curl localhost:8001` (8001 is the default port for `kubectl proxy`).
+
+### Using client libraries to talk to the API server
+
+If you plan to do much more than simple HTTP requests, it's likely going to be easier to interface with the API in a client library for your favorite language (e.g., Python, Java, Scala). See section 8.2.4 in the book for the complete list.
+
+**Note: You can explore the Kubernetes REST API a little bit easier by walking through it in the Swagger UI. Swagger is not enabled by default, but can be turned on by adding a configuration parameter to your API server.**
