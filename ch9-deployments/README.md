@@ -25,4 +25,34 @@ First we'll look at how to automate rolling deployments using `kubectl`. This is
 
 The app is the same as the NodeJS app we used in the initial chapters to show the basics of Kubernetes, except this time the app will also print out its version in the HTTP response.
 
-We will put the ReplicationController and Service definitions in the same YAML file. A YAML manifest can contain multiple objects delimited with a line containing 3 dashes.
+We will put the ReplicationController and Service definitions in the same YAML file. A YAML manifest can contain multiple objects delimited with a line containing 3 dashes. From `kubia-rc-and-service-v1.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: kubia-v1
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: kubia
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - image: luksa/kubia:v1
+        name: nodejs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia
+spec:
+  type: LoadBalancer
+  selector:
+    app: kubia
+  ports:
+  - port: 80
+    targetPort: 8080
+```
