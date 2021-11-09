@@ -67,4 +67,33 @@ kubectl rolling-update kubia-v1 kubia-v2 --image=luksa/kubia:v2
 
 ## Using Deployments for updating apps declaratively
 
+When updating apps backed by ReplicationControllers or ReplicaSets, you need to introduce a second controller to scale up the number of copies of your new version while simultaneously scaling down the number of copies of your old version. To help coordinate this action, as well as enable rollbacks and other handy features, Kubernetes introduced the Deployment resource.
 
+### Creating a Deployment
+
+Deployments look very similar to ReplicationControllers in terms of the YAML. A Deployment will create a ReplicaSet, which will create the pods. From `kubia-deployment-v1.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kubia
+  template:
+    metadata:
+      name: kubia
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - image: luksa/kubia:v1
+        name: nodejs
+```
+
+In addition to `kubectl get deployment` and `kubectl describe deployment`, you can also check the status of a Deployment with `kubectl rollout status deployment <name>`.
+
+## Updating a Deployment
