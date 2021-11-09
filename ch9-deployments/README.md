@@ -56,3 +56,15 @@ spec:
   - port: 80
     targetPort: 8080
 ```
+
+To perform a rolling update to the v2 container, run the following. This replaces the `kubia-v1` ReplicationController with one running v2 of your app.
+
+```bash
+kubectl rolling-update kubia-v1 kubia-v2 --image=luksa/kubia:v2
+```
+
+**Note: `kubectl rolling-update` has been deprecated, so this will not work on newer versions of Kubernetes. Instead, use Deployments.**
+
+## Using Deployments for updating apps declaratively
+
+
