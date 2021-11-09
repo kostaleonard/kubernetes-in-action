@@ -96,4 +96,16 @@ spec:
 
 In addition to `kubectl get deployment` and `kubectl describe deployment`, you can also check the status of a Deployment with `kubectl rollout status deployment <name>`.
 
-## Updating a Deployment
+### Updating a Deployment
+
+Updating the image used by a Deployment automatically triggers an update. The default update strategy is `RollingUpdate`, but there is also `Recreate` which will delete all of the current pods and start new ones.
+
+You can update the image with:
+
+```bash
+kubectl set image deployment kubia nodejs=luksa/kubia:v2
+```
+
+**Note: You can also update the Deployment (and other resources) using a new YAML file with `kubectl apply -f <file>` or `kubectl replace -f <file>`. This could be a better way to ensure all your changes end up in version control.**
+
+### Rolling back a deployment
