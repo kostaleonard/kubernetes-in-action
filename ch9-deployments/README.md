@@ -155,3 +155,45 @@ kubectl rollout undo deployment kubia
 ```
 
 ### Blocking rollouts of bad versions
+
+Earlier we set the `minReadySeconds` property. We used it to slow down the rollout for debugging purposes, but its main purpose is to prevent the deployment of malfunctioning applications. `minReadySeconds` specifies how long a new pod should be ready before it is treated as available. Until the pod is available, the rollout process will not continue. If a pod isn't functioning properly and its readiness probe starts failing before `minReadySeconds` have elapsed, the deployment will effectively be blocked.
+
+This time we'll use the following YAML and update with `kubectl apply`. From `kubia-deployment-v3-with-readinesscheck.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: kubia
+  template:
+    metadata:
+      name: kubia
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - image: luksa/kubia:v3
+        name: nodejs
+        readinessProbe:
+          periodSeconds: 1
+          httpGet:
+            path: /
+            port: 8080
+```
+
+Now update the deployment: `kubectl apply -f kubia-deployment-v3-with-readinesscheck.yaml`.
+
+The readiness probe will block the progress of the deployment. Based on the `minReadySeconds` interval you've defined and the number of retries the probe gets, a few clients may have experienced failed requests (make sure your `minReadySeconds` interval is generous), but after just a few seconds, the defective pod will be marked as not ready and will stop receiving traffic. After 10 minutes (by default) of no progress, the deployment will fail.
+
+Roll back the deployment with `kubectl rollout undo deployment kubia`. Depending on the Kubernetes version, this may happen automatically.
