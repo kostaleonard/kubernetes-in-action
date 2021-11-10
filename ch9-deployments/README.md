@@ -109,3 +109,23 @@ kubectl set image deployment kubia nodejs=luksa/kubia:v2
 **Note: You can also update the Deployment (and other resources) using a new YAML file with `kubectl apply -f <file>` or `kubectl replace -f <file>`. This could be a better way to ensure all your changes end up in version control.**
 
 ### Rolling back a deployment
+
+We've simulated a broken version of the app in `luksa/kubia:v3`. After responding to 4 requests correctly, the app returns error codes on GET requests. First we will deploy the new version.
+
+```bash
+kubectl set image deployment kubia nodejs=luksa/kubia:v3
+```
+
+Later we will learn how to block bad deployments, but for now we can manually roll back to a previous deployment version with:
+
+```bash
+kubectl rollout undo deployment kubia
+```
+
+We can roll back deployments easily because the history is stored in the underlying ReplicaSets. We can view this history with `kubectl rollout history deployment kubia`. To see the details of each revision, run `kubectl rollout history deployment kubia --revision=1`.
+
+**Note: If you roll back to a previous version, the revision number may be updated. For instance, the `kubia` app revision 2 was updated to revision 4 because we rolled back to it. Revision 2 no longer exists.**
+
+You can roll back to a specific revision with `kubectl rollout undo deployment kubia --to-revision=1`.
+
+### Controlling the rate of the rollout
