@@ -129,3 +129,29 @@ We can roll back deployments easily because the history is stored in the underly
 You can roll back to a specific revision with `kubectl rollout undo deployment kubia --to-revision=1`.
 
 ### Controlling the rate of the rollout
+
+You can control how fast new pods are created and old pods are removed with the `maxSurge` and `maxUnavailable` properties in the Deployment's `spec.strategy.rollingUpdate` field.
+
+### Pausing the rollout process
+
+You can pause the rollout of a Deployment to monitor the status of the change and verify the health of the new pods. We will simulate this by deploying a new version and then immediately pausing the rollout so that we have all of the original pods and 1 new pod from the updated version. This is also known as a canary release.
+
+```bash
+kubectl set image deployment kubia nodejs=luksa/kubia:v4
+kubectl rollout pause deployment kubia
+```
+
+Once you're ready, you can resume the deployment with:
+
+```bash
+kubectl rollout resume deployment kubia
+```
+
+If you need to abort the deployment, you can instead run the following (you need to resume the deployment before undoing it).
+
+```bash
+kubectl rollout resume deployment kubia
+kubectl rollout undo deployment kubia
+```
+
+### Blocking rollouts of bad versions
