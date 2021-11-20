@@ -105,3 +105,54 @@ spec:
 ```
 
 Create both the Service and the StatefulSet.
+
+### Playing with your pods
+
+Before, we've connected to pods by running an exec inside another pod in the cluster, using port-forwarding, connecting to services, etc. Now, we're going to use the API server as a proxy to the pods. First, use `kubectl proxy` to have Kubernetes handle authentication with the API server. Then, connect to the pods.
+
+This command blocks:
+
+```bash
+kubectl proxy
+```
+
+The trailing slash is necessary unless you use `-L` to follow redirects.
+
+```bash
+curl localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/
+```
+
+Now we'll send a POST request to the `kubia-0` pod.
+
+```bash
+curl -X POST -d "Hey there! This greeting was submitted to kubia-0." localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/
+```
+
+If you send the GET request again, you will see that your data has been stored in the `kubia-0` pod's volume. You can verify by sending a GET request to the `kubia-1` pod and seeing that no data has been stored.
+
+If you delete the `kubia-0` pod directly (`kubectl delete pod kubia-0`), the StatefulSet will create a new pod also named `kubia-0` to replace the old one. If you send the GET request again to the new pod, you will see that the storage persisted correctly.
+
+Scaling down a StatefulSet will leave the PersistentVolumeClaims intact, as we have said. So if the StatefulSet is scaled up again, the new pod will have the same state as the original unless the PersistentVolumeClaim is manually deleted.
+
+Now we'll add a (regular) Service for clients to connect to the pods. From `kubia-service-public.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia-public
+spec:
+  selector:
+    app: kubia
+  ports:
+  - port: 80
+    targetPort: 8080
+```
+
+This service is accessible from inside the cluster. You can use some of the methods previously described to hit the service, or you can access it through the proxy:
+
+```bash
+curl localhost:8001/api/v1/namespaces/default/services/kubia-public/proxy/
+```
+
+You'll notice that you get a random node each time, which is not always what you want--we will improve on this later.
