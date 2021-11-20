@@ -35,3 +35,73 @@ As discussed before, each pod in a StatefulSet needs its own PersistentVolumeCla
 Kubernetes guarantees not only stable, persistent storage and network identity for each pod, but also that **at most one** instance of each pod is running. This is to prevent collisions in network identity and storage.
 
 ## Using a StatefulSet
+
+### Creating the app and container image
+
+The app we are using is a modified version of the original kubia app that stores POST request content in a file, `/var/data/kubia.txt`. The image is available at `docker.io/luksa/kubia-pet`.
+
+### Deploying the app through a StatefulSet
+
+To deploy the app, you need 3 different kinds of objects:
+
+1. PersistentVolumes for storing data files (you won't need to create these if your cluster supports dynamic provisioning of PersistentVolumes).
+1. A governing Service required by the StatefulSet.
+1. The StatefulSet itself.
+
+We will dynamically provision the PersistentVolumes using the k8s.io/minikube-hostpath provisioner that comes in the standard StorageClass on Minikube.
+
+The headless service can be created from a yaml file. From `kubia-service-headless.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia
+spec:
+  clusterIP: None
+  selector:
+    app: kubia
+  ports:
+  - name: http
+    port: 80
+```
+
+Lastly, the StatefulSet is defined as follows. From `kubia-statefulset.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kubia
+spec:
+  serviceName: kubia
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kubia
+  template:
+    metadata:
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - name: kubia
+        image: luksa/kubia-pet
+        ports:
+        - name: http
+          containerPort: 8080
+        volumeMounts:
+        - name: data
+          mountPath: /var/data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      resources:
+        requests:
+          storage: 1Mi
+      accessModes:
+      - ReadWriteOnce
+```
+
+Create both the Service and the StatefulSet.
