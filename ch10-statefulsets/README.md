@@ -192,3 +192,17 @@ curl localhost:8001/api/v1/namespaces/default/services/kubia-public/proxy/
 ```
 
 ## Understanding how StatefulSets deal with node failures
+
+StatefulSets guarantee that there will never be two pods running with the same identity and storage. When a node appears to fail (it might just be that the kubelet on that node failed and all of the pods are healthy), a StatefulSet will not create a replacement pod. It will only create a new pod when the cluster administrator deletes the pod or the whole node.
+
+### Simulating a node's disconnection from the network
+
+**Note: This exercise cannot be completed on Minikube since it requires multiple nodes.**
+
+To simulate a node disconnecting from the network, ssh into a node and turn off its network interface. Kubernetes will mark the node as "NotReady", which you can see by running `kubectl get nodes`. The status of all pods running on that node will become "Unknown", as seen in the output of `kubectl get pods`.
+
+### Deleting the pod manually
+
+Pods with "Unknown" status are automatically deleted after some configurable time. You can also delete the pod manually with `kubectl delete pod kubia-0`. Either way, the StatefulSet will not create a new pod because it can't get in contact with the node's Kubelet to get confirmation that the pod has been deleted. So, you can forcibly delete the pod with `kubectl delete pod kubia-0 --force --grace-period 0`.
+
+**Note: Don't delete stateful pods forcibly unless you know that the node is no longer running or is unreachable, and will remain so forever.**
