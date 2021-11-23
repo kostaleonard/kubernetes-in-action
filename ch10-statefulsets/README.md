@@ -156,3 +156,39 @@ curl localhost:8001/api/v1/namespaces/default/services/kubia-public/proxy/
 ```
 
 You'll notice that you get a random node each time, which is not always what you want--we will improve on this later.
+
+## Discovering peers in a StatefulSet
+
+Peer discovery is an important part of StatefulSets (consider distributed databases). Kubernetes uses DNS, specifically SRV records, to enable peer discovery for StatefulSets.
+
+To list the SRV records for your stateful pods, you can create a temporary pod and run `dig` in it:
+
+```bash
+kubectl run -it srvlookup --image=tutum/dnsutils --rm --restart=Never -- dig SRV kubia.default.svc.cluster.local
+```
+
+You will see 2 SRV records indicating the FQDN of your stateful pods, as well as 2 A records indicating their IP addresses.
+
+### Implementing peer discovery through DNS
+
+We've updated the app (available at `docker.io/luksa/kubia-pet-peers`) so that a GET request to the service root (i.e., `GET kubia-public/`) causes the app to return the data across the entire StatefulSet cluster. The app will perform a DNS SRV lookup to get the hostnames and IP addresses of all the pods backing the service, then will send GET requests to each pod's `/data` endpoint to get the data on that pod.
+
+### Updating a StatefulSet
+
+Since the StatefulSet is running, we'll update the template with `kubectl edit`. You could also use commands like `patch` and `apply`. Depending on your Kubernetes version, you may need to delete the pods manually so that they update to the new image.
+
+### Trying out your clustered data store
+
+First, you can add some data to random nodes in the cluster with the following. Make sure the proxy is running.
+
+```bash
+curl -X POST -d "Parallel Lives" localhost:8001/api/v1/namespaces/default/services/kubia-public/proxy/
+```
+
+Now you can read the stored data with:
+
+```bash
+curl localhost:8001/api/v1/namespaces/default/services/kubia-public/proxy/
+```
+
+## Understanding how StatefulSets deal with node failures
