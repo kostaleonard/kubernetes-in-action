@@ -18,4 +18,10 @@ kubectl get pods -o custom-columns=POD:metadata.name,NODE:spec.nodeName --sort-b
 
 ### How Kubernetes uses etcd
 
+etcd is the (only) place where Kubernetes stores cluster state and metadata, including object manifests. Only the API server talks to etcd, which is a fast, distributed, consistent key-value store. etcd v2 is a hierarchical store (like a file system), but etcd v3 is flat (keys can have slashes in the name, so you can still think of the store as hierarchical). etcd should always be deployed in an odd number of instances, because an even number will increase the probability of cluster failure (due to the consensus algorithm).
+
+You can interact with etcd using `etcdctl`.
+
+### What the API server does
+
 
