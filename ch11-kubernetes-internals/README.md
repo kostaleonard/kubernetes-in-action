@@ -24,4 +24,18 @@ You can interact with etcd using `etcdctl`.
 
 ### What the API server does
 
+The Kubernetes API server is the central component for querying and modifying the cluster state over a RESTful API. It stores that state in etcd. Clients like `kubectl` interface with the API server.
+
+### Understanding how the API server notifies clients of resource changes
+
+Clients can request to watch a resource for updates. The API server will then notify clients if any changes are made to the resource. For example, the Controller Manager watches pods to make sure the correct number of replicas exist at all times.
+
+### Understanding the Scheduler
+
+The Scheduler determines the node on which a pod should run. The Scheduler doesn't actually assign a node to create a pod; it updates the pod definition to indicate the node on which the pod should run. The API server sends an update to all watchers (the cluster nodes), and when the Kubelet on the target node sees that the pod has been scheduled to its node, it creates the pod.
+
+You can define custom scheduling rules to select the best node for a given pod, a process which can be complex and application-dependent. You can also create multiple Schedulers for the cluster, and specify which Scheduler a pod should use.
+
+### Introducing the controllers running in the Controller Manager
+
 
