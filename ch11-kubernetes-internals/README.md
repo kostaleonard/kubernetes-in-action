@@ -38,4 +38,26 @@ You can define custom scheduling rules to select the best node for a given pod, 
 
 ### Introducing the controllers running in the Controller Manager
 
+The Controller Manager is the component that makes sure the actual state of the system converges toward the desired end state. Controllers include:
 
+* Replication Manager (for ReplicationControllers)
+* ReplicaSet, DaemonSet, and Job controllers
+* Deployment controller
+* StatefulSet controller
+* Node controller
+* Service controller
+* Namespace controller
+* PersistentVolume controller
+* Others
+
+In general, controllers run a reconciliation loop that takes the actual state (specified in the resource's `status`) and brings it toward the desired state (specified in the resource's `spec`). Controllers don't create and run resources themselves; they only post manifests to the API server, which uses the Scheduler and the Kubelet to schedule and run the pod, respectively.
+
+### What the Kubelet does
+
+In contrast with all the controllers, which are part of the Kubernetes Control Plane and run on the master node(s), the Kubelet and Service Proxy both run on the worker nodes. The Kubelet is the component responsible for everything running on a worker node. It registers the node on which it is running by creating a Node resource in the API server; then it monitors the API server for pods that are scheduled to its node, and starts those pods' containers. The Kubelet also reports resource status to the API server.
+
+### The role of the Kubernetes Service Proxy
+
+Every worker node also runs the Kubernetes Service Proxy (`kube-proxy`), whose purpose is to make sure clients can connect to services. The proxy makes sure connections to the service IP and port end up at one of the pods backing the service.
+
+### Introducing Kubernetes add-ons
