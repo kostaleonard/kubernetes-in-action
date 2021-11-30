@@ -82,4 +82,4 @@ Both Control Plane components and Kubelets send events to the API server as they
 
 ## Understanding what a running pod is
 
-
+In addition to the pod's explicitly defined container(s), one additional container is created on the node as part of the pod: a pod infrastructure container. The purpose of this container is to store namespace information (network interfaces, etc.) for all pods in a container.
