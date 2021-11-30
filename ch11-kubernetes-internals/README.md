@@ -61,3 +61,25 @@ In contrast with all the controllers, which are part of the Kubernetes Control P
 Every worker node also runs the Kubernetes Service Proxy (`kube-proxy`), whose purpose is to make sure clients can connect to services. The proxy makes sure connections to the service IP and port end up at one of the pods backing the service.
 
 ### Introducing Kubernetes add-ons
+
+Add-ons are extra components that are deployed as pods by submitting YAML manifests to the API server. These resources may be managed by Replication Controllers, ReplicaSets, DaemonSets, Deployments, etc. Add-ons include:
+
+* DNS
+* The Ingress controller
+* The Kubernetes web dashboard
+
+## How controllers cooperate
+
+Here is what happens when a pod is created, in this example through a Deployment resource.
+
+### The chain of events
+
+See the book for an in-depth explanation of the process of creating pods through a Deployment.
+
+### Observing cluster events
+
+Both Control Plane components and Kubelets send events to the API server as they perform actions. These are represented as Event resources, and can be seen with `kubectl get events`. You can also watch events in real time with `kubectl get events --watch`.
+
+## Understanding what a running pod is
+
+
