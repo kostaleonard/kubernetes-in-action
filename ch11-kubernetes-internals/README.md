@@ -83,3 +83,30 @@ Both Control Plane components and Kubelets send events to the API server as they
 ## Understanding what a running pod is
 
 In addition to the pod's explicitly defined container(s), one additional container is created on the node as part of the pod: a pod infrastructure container. The purpose of this container is to store namespace information (network interfaces, etc.) for all pods in a container.
+
+
+## Inter-pod networking
+
+Each pod gets its own unique IP address and can communicate with all other pods through a flat, NAT-less network.
+
+### What the network must be like
+
+All pods must agree on the IP addresses of all pods.
+
+### Diving deeper into how networking works
+
+Pods on the same node communicate with each other via a bridge. Each pod's infrastructure container creates a virtual ethernet interface, and the main container(s) connect to the virtual interface over their eth0 "physical" interface. The connection acts as a pipe to the network bridge, which connects all pods on a node.
+
+Pods on different nodes communicate over a network, which can use overlay or underlay networks or layer 3 routing. Each bridge in the cluster must have a unique IP range. Each bridge is also connected to the network, physically, using the node's eth0 interface. Kubernetes wants to be agnositc to underlying network architecturem, so communication between nodes is handled using Software Defined Networking.
+
+## How services are implemented
+
+### Introducing the kube-proxy
+
+Services are handled by the kube-proxy process running on each node. Remember that services use virtual addresses, IP and port pairs, which are layer 4 constructs (you can't ping a service).
+
+### How kube-proxy uses iptables
+
+When a new service is created, the kube-proxy on every node, which watches among other things new services, creates an iptables rule to forward packets destined for the service virtual address to the physical address of a randomly selected node running the service.
+
+## Running highly available clusters
