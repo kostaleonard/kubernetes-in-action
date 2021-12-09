@@ -110,3 +110,21 @@ Services are handled by the kube-proxy process running on each node. Remember th
 When a new service is created, the kube-proxy on every node, which watches among other things new services, creates an iptables rule to forward packets destined for the service virtual address to the physical address of a randomly selected node running the service.
 
 ## Running highly available clusters
+
+We usually want Kubernetes to keep apps running at all times even in the case of infrastructure failures. Kubernetes Control Plane components need to be running at all times as well in order to achieve this goal.
+
+### Making your apps highly available
+
+Always manage your app's pods using Deployment resources with more than one replica. Deployments (and their ReplicaSets) will ensure high availability. If your app is not horizontally scalable (only one copy can run at a time), then use a leader election mechanism; only one instance of the app will be performing work (the leader) while all other instances are on standby in case of failure.
+
+**Note: There is no need to implement leader election in the app itself. You can use already-existing sidecar containers that do the hard work.**
+
+### Making Kubernetes Control Plane components highly available
+
+You also need to run multiple copies of the Control Plane components: etcd, the API server, the Controller Manager, and the Scheduler.
+
+etcd is a distributed data store, so all you need to do is run it on multiple nodes and make each instance aware of the other instances in the configuration. Always run 3, 5, or 7 instances (even numbers don't actually help; more than 7 begins to impact performance in most cases).
+
+The API server is also easy; it is stateless except for caching, so just run it on multiple nodes. Usually one API server is collocated with one etcd instance.
+
+The Controller Manager and Scheduler modify the system state, so only one of each can be active at a time. Multiple instances can be run, but only one will be active (the leader). Leader election is the default behavior when running multiple instances of the Controller Manager and Scheduler, so little additional work needs to be done when adding new instances.
