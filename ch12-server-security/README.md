@@ -23,3 +23,39 @@ ServiceAccounts are how pods authenticate with the API server. When a pod makes 
 You can create ServiceAccounts using `kubectl create serviceaccount foo`; you can also create a ServiceAccount yaml.
 
 ### Assigning a ServiceAccount to a pod
+
+Now that you have a ServiceAccount, you can assign it to a pod in the pod's `spec.serviceAccountName` field. This field can't be changed after pod creation. From `curl-custom-sa.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl-custom-sa
+spec:
+  serviceAccountName: foo
+  containers:
+  - name: main
+    image: curlimages/curl
+    command: ["sleep", "9999999"]
+  - name: ambassador
+    image: luksa/kubectl-proxy:1.6.2
+```
+
+You can now try to talk to the API server with `kubectl exec -it curl-custom-sa -c main -- curl localhost:8001/api/v1/pods`; you may get a 403 response depending on your account's permissions.
+
+## Securing the cluster with role-based access control
+
+Role-based access control (RBAC) is a plugin enabled by default on modern Kubernetes. It prevents unauthorized users from viewing or modifying the cluster state.
+
+### Introducing the RBAC authorization plugin
+
+The RBAC plugin determines whether a client connecting to the API server is allowed to perform the requested HTTP verb on the requested resource (e.g., GET and Pods, POST and Service, PUT and Secrets). RBAC can also apply specific permissions to specific resources.
+
+### Introducing RBAC resources
+
+There are 4 RBAC resources, which can be split into 2 groups:
+
+1. Roles and ClusterRoles, which specify which verbs can be performed on which resources.
+1. RoleBindings and ClusterRoleBindings, which bind the above roles to specific users, groups, and ServiceAccounts.
+
+Roles and RoleBindings are the same thing as ClusterRoles and ClusterRoleBindings, except that the former are namespaced while the latter are not.
