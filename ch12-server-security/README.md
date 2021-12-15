@@ -59,3 +59,27 @@ There are 4 RBAC resources, which can be split into 2 groups:
 1. RoleBindings and ClusterRoleBindings, which bind the above roles to specific users, groups, and ServiceAccounts.
 
 Roles and RoleBindings are the same thing as ClusterRoles and ClusterRoleBindings, except that the former are namespaced while the latter are not.
+
+### Using Roles and RoleBindings
+
+The following Role allows users to GET and LIST services in the foo namespace. From `service-reader.yaml`:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: foo
+  name: service-reader
+rules:
+- apiGroups: [""]
+  verbs: ["get", "list"]
+  resources: ["services"]
+```
+
+We'll also create a similar role in the bar namespace using `kubectl create role service-reader --verb=get --verb=list --resource=services -n bar`.
+
+Now we need to create RoleBindings to bind the Roles to ServiceAccounts. We can do this with `kubectl create rolebinding test --role=service-reader --serviceaccount=foo:default -n foo`. The test pod (and any other pods with the default service account in namespace foo) can now get and list the services in namespace foo. You could also add the default service account in namespace bar to the rolebinding so that pods in namespace bar could get and list services in namespace foo.
+
+### Using ClusterRoles and ClusterRoleBindings
+
+
