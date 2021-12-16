@@ -82,4 +82,14 @@ Now we need to create RoleBindings to bind the Roles to ServiceAccounts. We can 
 
 ### Using ClusterRoles and ClusterRoleBindings
 
+A Role only allows access to resources in the same namespace as the Role. If you want to allow someone access to resources across different namespaces, you need to make a new Role in every namespace to access the resources in that namespace. Also, some resources aren't namespaced, and Roles can't grant access to those resources. ClusterRoles allow access to non-namespaced resources and can be used as a common role to be bound inside individual namespaces.
 
+You can create a ClusterRole to read PersistentVolumes with `kubectl create clusterrole pv-reader --verb=get,list --resource=persistentvolumes`.
+
+ClusterRoles can be bound to subjects with regular RoleBindings: `kubectl create rolebinding pv-test --clusterrole=pv-reader --serviceaccount=foo:default -n foo`.
+
+**Note: A RoleBinding referencing a ClusterRole will only work for namespaced resources; to access non-namespaced resources, you need to use a ClusterRoleBinding.**
+
+Now create a ClusterRoleBinding: `kubectl create clusterrolebinding pv-test --clusterrole=pv-reader --serviceaccount=foo:default`.
+
+The automatically-created `system:discovery` ClusterRole and identically named ClusterRoleBinding allow access to non-resource URLs. If you inspect the ClusterRoleBinding (`kubectl get clusterrolebinding system:discovery -o yaml`), you'll see that it is bound to all authenticated users, meaning that authenticated users can GET non-resource URLs.
