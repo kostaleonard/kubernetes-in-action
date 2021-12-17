@@ -93,3 +93,7 @@ ClusterRoles can be bound to subjects with regular RoleBindings: `kubectl create
 Now create a ClusterRoleBinding: `kubectl create clusterrolebinding pv-test --clusterrole=pv-reader --serviceaccount=foo:default`.
 
 The automatically-created `system:discovery` ClusterRole and identically named ClusterRoleBinding allow access to non-resource URLs. If you inspect the ClusterRoleBinding (`kubectl get clusterrolebinding system:discovery -o yaml`), you'll see that it is bound to all authenticated users, meaning that authenticated users can GET non-resource URLs.
+
+You can also create a ClusterRole to read/write namespaced resources. When bound with a ClusterRoleBinding, the user can access namespaced resources in all namespaces; when bound with a RoleBinding, the user can only access namespaced resources in the namespace of the RoleBinding.
+
+Another automatically-created ClusterRole is `view`, which allows read access to many resources. Create a ClusterRoleBinding with `kubectl create clusterrolebinding view-test --clusterrole=view --serviceaccount=foo:default`. You can also create a RoleBinding with `kubectl create rolebinding view-test --clusterrole=view --serviceaccount=foo:default -n foo`.
