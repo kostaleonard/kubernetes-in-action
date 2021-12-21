@@ -69,3 +69,97 @@ spec:
 Besides nanespaces, other security-related features can be configured on the pod and its containers with `securityContext` properties.
 
 ### Running a container as a specific user
+
+To run a pod under a different user ID than the one in the container image, set the `securityContext.runAsUser` property. From `pod-as-user-guest.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-as-user-guest
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "9999999"]
+    securityContext:
+      runAsUser: 405
+```
+
+### Preventing a container from running as root
+
+You can prevent a pod from running as root with `securityContext.runAsNonRoot`. From `pod-run-as-non-root.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-run-as-non-root
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "9999999"]
+    securityContext:
+      runAsNonRoot: true
+```
+
+If you deploy this pod, it will get scheduled, but will not run.
+
+### Running pods in privileged mode
+
+Some pods (e.g., kube-proxy) need to use protected system devices or other kernel features. From `pod-privileged.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-privileged
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "9999999"]
+    securityContext:
+      privileged: true
+```
+
+### Adding individual kernel capabilities to a container
+
+To have more fine-grained control over privileged functions, you can grant a pod specific kernel capabilities. For example, suppose you want a container to be able to change the system time. Add `CAP_SYS_TIME` to the container's capabilities list. From `pod-add-settime-capability.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-add-settime-capability
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "999999"]
+    securityContext:
+      capabilities:
+        add:
+        - SYS_TIME
+```
+
+### Dropping capabilities from a container
+
+You can also drop capabilities that may be available to the container. From `pod-drop-chown-capability.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-drop-chown-capability
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "9999999"]
+    securityContext:
+      capabilities:
+        drop:
+        - CHOWN
+```
