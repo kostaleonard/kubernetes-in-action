@@ -163,3 +163,71 @@ spec:
         drop:
         - CHOWN
 ```
+
+### Preventing processes from writing to the container's filesystem
+
+Preventing write access to a container's filesystem can prevent certain classes of attacks. In the following example, the container's filesystem is marked as read only, but the volume mount is still writable. From `pod-with-readonly-filesystem.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-readonly-filesystem
+spec:
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "9999999"]
+    securityContext:
+      readOnlyRootFilesystem: true
+    volumeMounts:
+    - name: my-volume
+      mountPath: /volume
+      readOnly: false
+  volumes:
+  - name: my-volume
+    emptyDir:
+```
+
+Under this design pattern, you can make the root filesystem read only, but then mount volumes for logs, caches, etc. to which the container should have write access.
+
+**Note: The security context property can be set at the pod or container level (container level overrides pod level).**
+
+### Sharing volumes when containers run as different users
+
+Containers in the same pod can share volumes, but only when the permissions are set correctly. Before, this wasn't an issue because we were running apps as root. If the containers are running as different users, they will need to run as the same group. You can set groups with `fsGroup` and `supplementalGroups`. From `pod-with-shared-volume-fsgroup.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-shared-volume-fsgroup
+spec:
+  securityContext:
+    fsGroup: 555
+    supplementalGroups: [666, 777]
+  containers:
+  - name: first
+    image: alpine
+    command: ["/bin/sleep", "9999999"]
+    securityContext:
+      runAsUser: 1111
+    volumeMounts:
+    - name: shared-volume
+      mountPath: /volume
+      readOnly: false
+  - name: second
+    image: alpine
+    command: ["/bin/sleep", "9999999"]
+    securityContext:
+      runAsUser: 2222
+    volumeMounts:
+    - name: shared-volume
+      mountPath: /volume
+      readOnly: false
+  volumes:
+  - name: shared-volume
+    emptyDir:
+```
+
+Volume mounts will be owned by `fsGroup`. Files that the user creates in this volume will be owned by `fsGroup`; files the user creates in any other location will be owned by the effective group ID (root by default).
