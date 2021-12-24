@@ -332,4 +332,39 @@ spec:
 
 ### Assigning different PodSecurityPolicies to different users and groups
 
+PodSecurityPolicies can be assigned to users and groups using the RBAC method described in the previous chapter. First we will make a PodSecurityPolicy that allows privileged users to create pods with privileged containers. From `psp-privileged.yaml`:
 
+```yaml
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: privileged
+spec:
+  privileged: true
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  volumes:
+  - '*'
+```
+
+Now you can create two ClusterRoles for the security policies.
+
+```bash
+kubectl create clusterrole psp-default --verb=use --resource=podsecuritypolicies --resource-name=default
+kubectl create clusterrole psp-privileged --verb=use --resource=podsecuritypolicies --resource-name=privileged
+```
+
+Now create ClusterRoleBindings. Bob is the user we would like to give the `psp-privileged` ClusterRole.
+
+```bash
+kubectl create clusterrolebinding psp-all-users --clusterrole=psp-default --group=system:authenticated
+kubectl create clusterrolebinding psp-bob --clusterrole=psp-privileged --user=bob
+```
+
+## Isolating the pod network
