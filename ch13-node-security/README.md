@@ -231,3 +231,105 @@ spec:
 ```
 
 Volume mounts will be owned by `fsGroup`. Files that the user creates in this volume will be owned by `fsGroup`; files the user creates in any other location will be owned by the effective group ID (root by default).
+
+## Restricting the use of security-related features in a pod
+
+What is to stop a cluster user from deploying a pod that runs in privileged mode? The cluster administrator can create a PodSecurityPolicy resource to prevent abuse of pod security features.
+
+### Introducing the PodSecurityPolicy resource
+
+PodSecurityPolicy is a cluster-level resource that defines the security-related features users can or can't use in their pods. The following PodSecurityPolicy prevents pods from using the host's IPC, PID, and network namespaces; prevents running privileged containers; and prevents the use of most host ports. From `pod-security-policy.yaml`:
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: default
+spec:
+  hostIPC: false
+  hostPIC: false
+  hostNetwork: false
+  hostPorts:
+  - min: 10000
+    max: 11000
+  - min: 13000
+    max: 14000
+  privileged: false
+  readOnlyRootFilesystem: true
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  volumes:
+  - '*'
+```
+
+### Understanding runAsUser, fsGroup, and supplementalGroups policies
+
+You can impose limits on the users and groups a pod runs with using the rules in thee `runAsUser`, `fsGroup`, and `supplementalGroups` fields. From `psp-must-run-as.yaml`:
+
+```yaml
+runAsUser:
+  rule: MustRunAs
+  ranges:
+  - min: 2
+    max: 2
+fsGroup:
+  rule: MustRunAs
+  ranges:
+  - min: 2
+    max: 10
+  - min: 20
+    max: 30
+supplementalGroups:
+  rule: MustRunAs
+  ranges:
+  - min: 2
+    max: 10
+  - min: 20
+    max: 30
+```
+
+**Note: Changing the policy has no effect on existing pods, because PodSecurityPolicies are enforced only when pods are created or updated.**
+
+**Note: The user ID baked into an image can be overridden using MustRunAs.**
+
+### Configuring allowed, default, and disallowed capabilities
+
+You can also define more fine-grained control over the kernel capabilities available to each container. From `psp-capabilities.yaml`:
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+spec:
+  allowedCapabilities:
+  - SYS_TIME
+  defaultAddCapabilities:
+  - CHOWN
+  requiredDropCapabilities:
+  - SYS_ADMIN
+  - SYS_MODULE
+```
+
+### Constraining the types of volumes pods can use
+
+PodSecurityPolicies can define which volume types users can use in their pods. From `psp-volumes.yaml`:
+
+```yaml
+kind: PodSecurityPolicy
+spec:
+  volumes:
+  - emptyDir
+  - configMap
+  - secret
+  - downwardAPI
+  - persistentVolumeClaim
+```
+
+### Assigning different PodSecurityPolicies to different users and groups
+
+

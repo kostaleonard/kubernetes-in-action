@@ -1,0 +1,8 @@
+kind: PodSecurityPolicy
+spec:
+  volumes:
+  - emptyDir
+  - configMap
+  - secret
+  - downwardAPI
+  - persistentVolumeClaim

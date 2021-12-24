@@ -1,0 +1,10 @@
+apiVersion: extensions/v1beta1
+kind: PodSecurityPolicy
+spec:
+  allowedCapabilities:
+  - SYS_TIME
+  defaultAddCapabilities:
+  - CHOWN
+  requiredDropCapabilities:
+  - SYS_ADMIN
+  - SYS_MODULE
