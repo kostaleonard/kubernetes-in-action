@@ -1,0 +1,9 @@
+spec:
+  podSelector:
+    matchLabels:
+      app: webserver
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: database

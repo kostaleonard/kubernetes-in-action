@@ -368,3 +368,91 @@ kubectl create clusterrolebinding psp-bob --clusterrole=psp-privileged --user=bo
 ```
 
 ## Isolating the pod network
+
+Now we'll explore security configuration for pod networking to limit which pods can talk to which other pods. We'll do this with NetworkPolicy resources.
+
+### Enabling network isolation in a namespace
+
+The following NetworkPolicy prevents all clients from connecting to pods in your namespace. The empty `podSelector` field doesn't match any pods, so no pods will be able to connect. From `network-policy-default-deny.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  podSelector:
+```
+
+### Allowing only some pods in the namespace to connect to a server pod
+
+Suppose you only want your webserver to be able to connect to your database. With the following NetworkPolicy, only webserver pods will be able to connect to database pods, and only on port 5432. From `network-policy-postgres.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-netpolicy
+spec:
+  podSelector:
+    matchLabels:
+      app: database
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: webserver
+    ports:
+    - port: 5432
+```
+
+Client pods connecting through a Service will still be restricted as expected.
+
+### Isolating the network between Kubernetes namespaces
+
+You can also allow/deny access from specific namespaces using namespace selectors. In the following NetworkPolicy, only namespaces with label `tenant=manning` are allowed to access the shopping cart microservice. From `network-policy-cart.yaml`:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: shoppingcart-netpolicy
+spec:
+  podSelector:
+    matchLabels:
+      app: shopping-cart
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          tenant: manning
+    ports:
+    - port: 80
+```
+
+### Isolating using CIDR notation
+
+Instead of using label selectors, you can limit access with IP ranges in CIDR notation. From `network-policy-cidr.yaml`:
+
+```yaml
+ingress:
+- from:
+  - ipBlock:
+      cidr: 192.168.1.0/24
+```
+
+### Limiting the outbound traffic of a set of pods
+
+In the previous examples, we limited traffic using ingress rules. You can also limit traffic using egress rules. In the following NetworkPolicy, the webserver pods are only allowed to connect to the database (and nothing else). From `network-policy-egress.yaml`:
+
+```yaml
+spec:
+  podSelector:
+    matchLabels:
+      app: webserver
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: database
+```
