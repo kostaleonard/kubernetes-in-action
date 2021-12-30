@@ -87,4 +87,77 @@ Containers see the node's memory and CPUs, not the container's. The container wi
 
 ## Understanding pod QoS classes
 
+When a node can't provide enough resources to all its pods, which pod(s) should be killed? This depends on each pod's Quality of Service class:
 
+* `BestEffort` (lowest priority)
+* `Burstable`
+* `Guaranteed` (highest priority)
+
+### Defining the QoS class for a pod
+
+QoS class is assigned to pods not through a field in the manifest, but from a combination of resource requests and limits.
+
+* `BestEffort`: No resource/limit requests.
+* `Burstable`: Does not meet qualifications of `BestEffort` or `Guaranteed`.
+* `Guaranteed`: Requests equal limits for all resources, and requests include both CPU and memory for each container.
+
+A pod's QoS class is shown when running `kubectl describe pod` and in the pod's manifest in the `status.qosClass` field.
+
+### Understanding which process gets killed when memory is low
+
+First to get killed are `BestEffort` pods, then `Burstable` pods, then `Guaranteed` pods. Within the same QoS class, the system kills the pod with the highest OutOfMemory (OOM) score. OOM scores are based on the percentage of requested memory in use; a pod using 90% of its requested memory will be killed before a pod using 70%, assuming both are in the same QoS class.
+
+## Setting default requests and limits for pods per namespace
+
+If you don't set requests or limits for some pods, they could experience starvation. It is a good idea to set requests and limits on every container.
+
+### Introducing the LimitRange resource
+
+Instead of declaring requests and limits for every container, you can do it by creating a LimitRange resource. It allows you to set the minimum and maximum resource limits a container can request, and the default requests and limits for containers that don't specify them explicitly.
+
+Another good use case for LimitRanges is to prevent users from creating pods that are bigger than any node in the cluster.
+
+### Creating a LimitRange object
+
+From `limits.yaml`:
+
+```yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: example
+spec:
+  limits:
+  - type: Pod
+    min:
+      cpu: 50m
+      memory: 5Mi
+    max:
+      cpu: 1
+      memory: 1Gi
+  - type: Container
+    defaultRequest:
+      cpu: 100m
+      memory: 10Mi
+    default:
+      cpu: 200m
+      memory: 100Mi
+    min:
+      cpu: 50m
+      memory: 5Mi
+    max:
+      cpu: 1
+      memory: 1Gi
+    maxLimitRequestRatio:
+      cpu: 4
+      memory: 10
+  - type: PersistentVolumeClaim
+    min:
+      storage: 1Gi
+    max:
+      storage: 100Gi
+```
+
+Here, limits for several types of objects are compiled into one LimitRange, but you can just as easily make separate LimitRange objects for each resource if you prefer.
+
+### Enforcing the limits
