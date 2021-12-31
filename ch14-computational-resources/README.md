@@ -161,3 +161,97 @@ spec:
 Here, limits for several types of objects are compiled into one LimitRange, but you can just as easily make separate LimitRange objects for each resource if you prefer.
 
 ### Enforcing the limits
+
+The API server will reject resource creation requests that violate any of your established limits.
+
+### Applying default resource requests and limits
+
+Deploy `kubia-manual` from chapter 3 again: `kubectl apply -f ../ch03-pods/kubia-manual.yaml`. You will see that it uses your default requests and limits.
+
+## Limiting the total resources available in a namespace
+
+LimitRanges only apply to individual pods, but cluster admins also need a way to limit the total amount of resources available in a namespace (say, so that one team doesn't eat up all the resources in the cluster).
+
+### Introducing the ResourceQuota object
+
+A ResourceQuota limits the amount of resources pods, PersistentVolumeClaims, and the like consume; it can also limit the number of pods, claims, public IPs, and other objects.
+
+With the following ResourceQuota in place, the current namespace (ResourceQuotas are namespaced) will be limited to 400m in total CPU requests and 600m in total CPU limits. From `quota-cpu-memory.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: cpu-and-mem
+spec:
+  hard:
+    requests.cpu: 400m
+    requests.memory: 200Mi
+    limits.cpu: 600m
+    limits.memory: 500Mi
+```
+
+If you create a ResourceQuota object, the API server will reject any manifest that doesn't have requests and limits defined for the enumerated resources, so you will likely also want to have a LimitRange object alongside the ResourceQuota to define defaults.
+
+### Specifying a quota for persistent storage
+
+The following ResourceQuota limits total requested storage to 500Gi, and sets specific limits for each storage class. From `quota-storage.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: storage
+spec:
+  hard:
+    requests.storage: 500Gi
+    ssd.storageclass.storage.k8s.io/requests.storage: 300Gi
+    standard.storageclass.k8s.io/requests.storage: 1Ti
+```
+
+**Question: Is the 1Ti request a typo? Does it make sense for a single storage class to have a request limit greater than the overall storage request limit for the namespace?**
+
+### Limiting the number of objects that can be created
+
+From `quota-object-count.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: objects
+spec:
+  hard:
+    pods: 10
+    replicationcontrollers: 5
+    secrets: 10
+    configmaps: 10
+    persistentvolumeclaims: 4
+    services: 5
+    services.loadbalancers: 1
+    services.nodeports: 2
+    ssd.storageclass.storage.k8s.io/persistentvolumeclaims: 2
+```
+
+### Specifying quotas for specific pod states and/or QoS classes
+
+Quotas can be limited by scope. Four scopes exist (at the time of publication of the book): `BestEffort`, `NotBestEffort`, `Terminating`, `NotTerminating`. ResourceQuotas can be assigned scopes, and resources must match all specified scopes for the quota to apply.
+
+From `quota-scoped.yaml`:
+
+```yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: besteffort-notterminating-pods
+spec:
+  scopes:
+  - BestEffort
+  - NotTerminating
+  hard:
+    pods: 4
+```
+
+## Monitoring pod resource usage
+
+
