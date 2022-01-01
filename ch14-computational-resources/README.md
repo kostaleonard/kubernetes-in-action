@@ -254,4 +254,20 @@ spec:
 
 ## Monitoring pod resource usage
 
+The best way to know if your pods are getting too much or too little resources is to monitor them.
 
+### Collecting and retrieving actual resource usages
+
+Kubernetes allows collection of resource consumption data through an additional component called Heapster, which runs as a pod exposed by a Service. Heapster gets its data from a Kubernetes agent called cAdvisor running on each Kubelet.
+
+Heapster is available as a Kubernetes add-on. On some platforms (e.g., GKE) it is enabled by default; on minikube, you can enable it with `minikube addons enable heapster`.
+
+With Heapster running, you can obtain resource usage information with `kubectl top node`.
+
+**Note: You may experience errors when running `kubectl top` if metrics have yet to be aggregated at Heapster. Give it a few minutes.**
+
+### Storing and analyzing historical resource consumption statistics
+
+Heapster only stores metrics for a short window, so if you want to analyze historical resource consumption statistics, you need to use another tool, like Google Cloud Monitoring (GKE), or InfluxDB/Grafana.
+
+InfluxDB is an open source time-series database. Grafana is an open source analytics and visualization suite with a web console that allows you to view data in InfluxDB. Both tools can run as pods. Their manifests are available in the Heapster git repository (see book for link). Sometimes, as in some versions of minikube, these pods get deployed by default when you run Heapster.
