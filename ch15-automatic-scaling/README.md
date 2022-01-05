@@ -63,4 +63,36 @@ HPAs have a maximum upscaling rate of twice the number of pods. Additionally, sc
 
 ### Scaling based on memory consumption
 
+Memory-based autoscaling doesn't work exactly like CPU-based autoscaling, since creating more replicas of a pod doesn't have any effect on the memory consumption of an app. Discussion of memory-based autoscaling is beyond the scope of this book.
+
+### Scaling based on other and custom metrics
+
+The metrics used for autoscaling can be any of the following types, including combinations.
+
+* Resource: The resource metrics like those defined in a container's resource requests.
+* Pods: Any metric related to the pod directly, e.g., queries per second (QPS) or message queue length.
+* Object: Any metric not related to pods directly, e.g., query latency (an Ingress metric).
+
+### Determining which metrics are appropriate for autoscaling
+
+Not all metrics are good bases for autoscaling. If increasing the replica count won't result in a relatively linear decrease in the metric (as with memory consumption), then the autoscaler won't function properly.
+
+### Scaling down to zero replicas
+
+HPAs don't allow you to scale down to 0 replicas, but in future (this may already be implemented since the book is a few years old), Kubernetes will provide a feature that allows you to scale down to 0 replicas; when a new request comes in and there are no pods to back the service, the request is blocked while the pod is brought online, and the request is handled.
+
+## Vertical pod autoscaling
+
+Some applications can't be scaled horizontally, and instead need to be scaled vertically by adding CPU and/or memory. This feature may or may not be fully implemented in the current Kubernetes version (it was a WIP at the time of publication).
+
+### Automatically configuring resource requests
+
+There are experimental features (again, at publication time), e.g. the InitialResources Kubernetes resource, that provide automatic configuration of resource requests and limits. In the case of InitialResources, new pods are automatically assigned resource requests and limits based on the historical resource usage of previous pods.
+
+### Modifying resource requests while a pod is running
+
+At the time of publication, the finalized proposal for this feature was just published. It may be available in the current version of Kubernetes.
+
+## Horizontal scaling of cluster nodes
+
 
