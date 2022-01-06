@@ -95,4 +95,6 @@ At the time of publication, the finalized proposal for this feature was just pub
 
 ## Horizontal scaling of cluster nodes
 
+You can use the Cluster Autoscaler to horizontally scale the number of nodes available. When a pod can't be scheduled to any node, the autoscaler will attempt to request a new node that can fit the pod (if multiple types of nodes can fit the pod, one will have to be selected based on user-defined configuration not covered here). When a node's CPU or other monitored resource usage falls below 50% (probably configurable), the node is removed from the cluster as long as the autoscaler can be confident that removing it will not disrupt cluster operations, e.g., if the node is running a system pod or standalone pod.
 
+Another resource that could be helpful for controlling scaling operations is the PodDisruptionBudget, which is a simple resource that controls how many pods matching a certain label selector must remain available at all times when performing scaling operations. You can also set the number to a percentage, or to the maximum number unavailable instead.
