@@ -86,3 +86,43 @@ spec:
 Here, availability zone will be prioritized over share type for scheduling decisions, although the scheduler will try to honor both. Note that the scheduler has other prioritization rules for selecting the node for a given pod; one of these promotes spreading pods across multiple nodes to maintain function if one of the nodes goes down. So, even if you prefer only one node, pods may be spread across several.
 
 ## Co-locating pods with pod affinity and anti-affinity
+
+Sometimes you want to specify the affinity between pods, rather than between pods and nodes. Suppose, for example, you have frontend and backend pods that you want to keep close together, but don't want to have to specify the exact node or datacenter to which to schedule them.
+
+### Using inter-pod affinity to deploy pods on the same node
+
+First, we'll deploy a backend pod with `kubectl run backend -l app=backend --image busybox -- sleep 9999999`. Now, we'll create the frontend pod with affinity.
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 5
+  template:
+    ...
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                app: backend
+      ...
+```
+
+This Deployment creates pods that must be scheduled to the same node as the ones backend pods are scheduled to.
+
+If you delete and recreate (or a controller recreates) the backend pod, it will get scheduled back to the node with all the frontend pods. This is because the Scheduler takes other pods' pod affinity rules into account and sees that the backend pod should be with the frontend pods.
+
+### Deploying pods in the same rack, availability zone, or geographic region
+
+Instead of deploying pods with affinity to the same node, you can also use `topologyKey` to deploy to the same general area without forcing pods to be on the same node. For instance, you can set `topologyKey` to `failure-domain.beta.kubernetes.io/zone` to co-locate pods in the same availability zone, or `failure-domain.beta.kubernetes.io/region` for the same region.
+
+You can also use your own `topologyKey` value by adding a label to your nodes (e.g., for the rack that they occupy).
+
+### Expressing pod affinity preferences instead of hard requirements
+
+
