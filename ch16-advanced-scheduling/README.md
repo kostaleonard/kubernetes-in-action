@@ -125,4 +125,8 @@ You can also use your own `topologyKey` value by adding a label to your nodes (e
 
 ### Expressing pod affinity preferences instead of hard requirements
 
+Both node affinity and pod affinity can be expressed as preferences instead of hard requirements. Simply substitute `requiredDuringSchedulingIgnoredDuringExecution` with `preferredDuringSchedulingIgnoredDuringExecution`, and provide a weight factor.
 
+### Scheduling pods away from each other with pod anti-affinity
+
+To keep pods away from each other, substitude `podAffinity` with `podAntiAffinity`. You might want to do this if two sets of pods would interfere with each other's performance if they run on the same node, or if you want to spread pods across regions for resiliency.
