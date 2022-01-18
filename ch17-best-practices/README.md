@@ -30,4 +30,33 @@ If a pod's container keeps crashing, the time between restarts will continue to 
 
 ### Starting pods in a specific order
 
+Kubernetes systems are usually defined in a single YAML or JSON file. There is no guarantee (especially if any pods get restarted) that any one pod will start before any other, so temporal dependencies cannot be captured in such a manner. However, you can include in a pod an extra "init" container. Init containers run before the main container(s) of a pod, and only allow the main container(s) to start once some precondition is met (e.g., successful connection to a service). Init containers are defined in a pod's `spec.initContainers` field.
 
+With that said, it is even better practice to make sure apps work (or fail gracefully) when dependencies are absent or not ready. You never know when the service will go down.
+
+### Adding lifecycle hooks
+
+You can define two kinds of lifecycle hooks that execute commands or requests after a pod has started (post-start hooks) and just before it is stopped (pre-stop hooks). The options are similar to readiness probes:
+
+* Execute a command.
+* Perform an HTTP GET request.
+
+A pod with a post-start hook will remain in the `Waiting` state until the hook has finished, and if it exits with an error, the pod will be killed. From `post-start-hook.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-poststart-hook
+spec:
+  containers:
+  - image: luksa/kubia
+    name: kubia
+    lifecycle:
+      postStart:
+        exec:
+          command:
+          - sh
+          - -c
+          - "echo 'hook will fail with exit code 15'; sleep 5; exit 15"
+```
