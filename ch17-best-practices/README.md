@@ -60,3 +60,32 @@ spec:
           - -c
           - "echo 'hook will fail with exit code 15'; sleep 5; exit 15"
 ```
+
+A pre-stop hook, on the other hand, is executed immediately before a container is terminated. The following is an example of an HTTP GET pre-stop hook. The request is sent to [http://POD_IP:8080/shutdown]. This endpoint is configurable in the `httpGet` fields. Regardless of the exit code from the hook, the pod will be terminated. **You may not even notice if the hook fails, so if it is performing a critical operation, log its output or test it.**
+
+```yaml
+    lifecycle:
+      preStop:
+        httpGet:
+          port: 8080
+          path: shutdown
+```
+
+
+Lifecycle hooks target containers, not pods, so don't execute entire-pod startup/termination logic.
+
+### Understanding pod shutdown
+
+You can configure the termination grace period, the time the Kubelet allots to your app to execute the pre-stop hook and shutdown on receiving SIGTERM, by setting the `spec.terminationGracePeriodSeconds` field.
+
+Note that there are no guarantees that a pod will be allowed to complete its whole shut-down procedure. Instead, it is better to have a separate pod (perhaps a CronJob) running and checking for orphaned resources (e.g., data in a PersistentVolume) and migrating them to where they need to be.
+
+## Ensuring all client requests are handled properly
+
+Your pods need to follow a few rules to ensure that no client connections are broken.
+
+### Preventing broken client connections when a pod is starting up
+
+All you need to do during start-up is define a readiness probe that returns success only when your app is ready to handle incoming requests. A good first approach is to use an HTTP GET probe to the base URL of the app.
+
+### Preventing broken connections during pod shut-down
