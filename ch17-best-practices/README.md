@@ -89,3 +89,36 @@ Your pods need to follow a few rules to ensure that no client connections are br
 All you need to do during start-up is define a readiness probe that returns success only when your app is ready to handle incoming requests. A good first approach is to use an HTTP GET probe to the base URL of the app.
 
 ### Preventing broken connections during pod shut-down
+
+When your app receives a SIGTERM to shut down gracefully, you need to be careful how you shut down so as to disrupt user connections as little as possible. The book has an extended explanation, but what your app should do upon receiving SIGTERM is:
+
+1. Wait for a few seconds, then stop accepting new connections. This gives kube-proxies and others watching changes to service Endpoints objects time to remove the pod's IP from `iptables` and similar mechanisms for directing traffic. You can't guarantee that all of these users will update in a timely manner, or that you even know all of the existing users, but giving a few seconds for users to stop sending requests to the pod will significantly improve the user experience.
+1. Close all keep-alive connections not in the middle of a request.
+1. Wait for all active requests to finish.
+1. Shut down completely.
+
+A basic version of this process can be accomplished with a pre-stop hook. In its most simple formulation, that pre-stop hook looks like this:
+
+```yaml
+    lifecycle:
+      preStop:
+        exec:
+          command:
+          - sh
+          - -c
+          - "sleep 5"
+```
+
+## Making your apps easy to run and manage in Kubernetes
+
+### Making manageable container images
+
+Keep your images small. It's okay to include a few tools (e.g., `ping`, `dig`, `curl`, `vim`) for debugging, but don't package up an entire filesystem.
+
+### Properly tagging your images and using ImagePullPolicy wisely
+
+It is very advisable to use version tags on images instead of the `latest` tag in pods. If you use `latest`, you can (and will) run multiple versions of your app at the same time, unintentionally. Plus, you can't easily rollback the deployment to the previous version. Always use versioned tags on images when you create a pod.
+
+Beware of using the `Always` ImagePullPolicy. It can be costly, and you won't be able to create new pods when the registry cannot be contacted.
+
+## Using multi-dimensional instead of single-dimensional labels
