@@ -121,4 +121,68 @@ It is very advisable to use version tags on images instead of the `latest` tag i
 
 Beware of using the `Always` ImagePullPolicy. It can be costly, and you won't be able to create new pods when the registry cannot be contacted.
 
-## Using multi-dimensional instead of single-dimensional labels
+### Using multi-dimensional instead of single-dimensional labels
+
+Label all your resources, and add labels on many dimensions for management. Examples include:
+
+* Application name
+* Application tier (front-end, back-end, etc.)
+* Environment (development, QA, staging, production, etc.)
+* Version
+* Type of release (stable, canary, green/blue, etc.)
+* Tenant (in absence of namespaces)
+* Shard for sharded systems
+
+### Describing each resource through annotations
+
+Annotate all resources with at least a short description and contact information of the person responsible for it.
+
+### Providing information on why the process terminated
+
+Maintain log files with the necessary debugging information. You can also have the container write a termination message to a special file, by default `/dev/termination-log` (configured with `terminationMessagePath`), whose contents will appear in the output of `kubectl describe pod` for easier debugging; this way you won't have to inspect the logs. From `termination-message.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-termination-message
+spec:
+  containers:
+  - image: busybox
+    name: main
+    terminationMessagePath: /var/termination-reason
+    command:
+    - sh
+    - -c
+    - 'echo "I''ve had enough" > /var/termination-reason ; exit 1'
+```
+
+This functionality can be used even when a pod terminated successfully.
+
+### Handling application logs
+
+Apps should write logs to the standard output, not files. This makes it easier to view logs with `kubectl logs`. If the app does write to a file, you can copy it to your local machine with `kubectl cp`.
+
+For production systems, you should use a centralized, cluster-wide logging solution to collect and permanently store logs. Logging solutions can be enabled with the click of a button using some cloud service providers, but otherwise you can use the ELK/EFK stack or similar.
+
+## Best practices for development and testing
+
+### Running apps outside of Kubernetes during development
+
+Even though you're writing an app that will go into production in a Kubernetes environment, you don't need to run it in Kubernetes during development. Set any necessary environment variables manually on your local machine, and run your app normally.
+
+### Using Minikube in development
+
+If you need to test your app in a Kubernetes environment, Minikube is a great option.
+
+### Versioning and auto-deploying resource manifests
+
+Version your resource manifests. You can use tools like [kube-applier](https://github.com/box/kube-applier) to automatically apply new resource manifests any time they are updated in git.
+
+### Introducing Ksonnet as an alternative to writing YAML/JSON manifests
+
+Ksonnet is a programming language that is an alternative to writing YAML/JSON manifests. It is based on the Jsonnet tool, which is an alternative to writing JSON. It provides some important benefits, like reducing duplication.
+
+### Employing CI/CD
+
+Use CI/CD as described with tools like kube-applier. You can also use [Fabric8](http://fabric8.io) for an end-to-end DevOps solution.
