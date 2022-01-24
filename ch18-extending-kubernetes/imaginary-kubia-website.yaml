@@ -1,0 +1,5 @@
+kind: Website
+metadata:
+  name: kubia
+spec:
+  gitRepo: https://github.com/luksa/kubia-website-example.git
